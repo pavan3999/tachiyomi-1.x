@@ -42,13 +42,24 @@ jobs:
           mkdir -p ~/.gradle
           cp .github/runner-files/ci-gradle.properties ~/.gradle/gradle.properties
 
+      - name: Set up keystore
+        run: mkdir -p ~/.android/ && echo "${{ secrets.DEBUG_KEYSTORE }}" | base64 --decode > ~/.android/debug.keystore
+
       - name: Build and test app
         uses: eskatos/gradle-command-action@v1
         with:
-          arguments: assembleDebug :domain:test :domain:jacocoTestReport
+          arguments: assembleDebug
           wrapper-cache-enabled: true
           dependencies-cache-enabled: true
           configuration-cache-enabled: true
 
-      - name: Upload test coverage
-        uses: codecov/codecov-action@v1
+      - name: Create Release
+        uses: actions/upload-artifact@v2
+        with:
+          name: Tachiyomi
+          path: app/build/outputs/apk
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: Tachiyomi
