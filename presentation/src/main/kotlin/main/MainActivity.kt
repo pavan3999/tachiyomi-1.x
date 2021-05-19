@@ -6,11 +6,12 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.ui
+package tachiyomi.ui.main
 
 import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
+import androidx.core.view.WindowCompat
 import tachiyomi.core.di.AppScope
 import tachiyomi.domain.ui.UiPreferences
 import tachiyomi.domain.ui.model.StartScreen
@@ -25,9 +26,12 @@ class MainActivity : BaseActivity() {
     super.onCreate(savedInstanceState)
     val startRoute = uiPrefs.startScreen().get().toRoute()
 
+    WindowCompat.setDecorFitsSystemWindows(window, false)
+
     setContent {
       AppTheme {
         MainNavHost(startRoute)
+        ConfirmExitBackHandler(uiPrefs)
       }
     }
   }

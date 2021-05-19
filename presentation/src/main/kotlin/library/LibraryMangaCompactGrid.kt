@@ -9,7 +9,9 @@
 package tachiyomi.ui.library
 
 import androidx.compose.foundation.ExperimentalFoundationApi
-import androidx.compose.foundation.clickable
+import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
+import androidx.compose.foundation.combinedClickable
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
@@ -24,16 +26,18 @@ import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.composed
 import androidx.compose.ui.draw.clip
 import androidx.compose.ui.draw.drawWithCache
 import androidx.compose.ui.geometry.Offset
 import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
+import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
+import com.google.accompanist.coil.rememberCoilPainter
 import tachiyomi.domain.library.model.LibraryManga
-import tachiyomi.ui.core.coil.CoilImage
 import tachiyomi.ui.core.coil.rememberMangaCover
 import tachiyomi.ui.core.util.Typefaces
 
@@ -41,7 +45,9 @@ import tachiyomi.ui.core.util.Typefaces
 @Composable
 fun LibraryMangaCompactGrid(
   library: List<LibraryManga>,
-  onClickManga: (LibraryManga) -> Unit = {}
+  selectedManga: List<Long>,
+  onClickManga: (LibraryManga) -> Unit = {},
+  onLongClickManga: (LibraryManga) -> Unit = {}
 ) {
   LazyVerticalGrid(
     cells = GridCells.Adaptive(160.dp),
@@ -52,9 +58,11 @@ fun LibraryMangaCompactGrid(
     items(library) { manga ->
       LibraryMangaCompactGridItem(
         manga = manga,
+        isSelected = manga.id in selectedManga,
         unread = null, // TODO
         downloaded = null, // TODO
-        onClick = { onClickManga(manga) }
+        onClick = { onClickManga(manga) },
+        onLongClick = { onLongClickManga(manga) }
       )
     }
   }
@@ -63,9 +71,11 @@ fun LibraryMangaCompactGrid(
 @Composable
 private fun LibraryMangaCompactGridItem(
   manga: LibraryManga,
+  isSelected: Boolean,
   unread: Int?,
   downloaded: Int?,
-  onClick: () -> Unit = {}
+  onClick: () -> Unit,
+  onLongClick: () -> Unit
 ) {
   val fontStyle = LocalTextStyle.current.merge(
     TextStyle(letterSpacing = 0.sp, fontFamily = Typefaces.ptSansFont, fontSize = 14.sp)
@@ -73,13 +83,19 @@ private fun LibraryMangaCompactGridItem(
 
   Box(
     modifier = Modifier
+      .selectedBackground(isSelected)
+      .combinedClickable(onClick = onClick, onLongClick = onLongClick)
       .padding(4.dp)
       .fillMaxWidth()
       .aspectRatio(3f / 4f)
       .clip(MaterialTheme.shapes.medium)
-      .clickable(onClick = onClick)
   ) {
-    CoilImage(model = rememberMangaCover(manga))
+    Image(
+      painter = rememberCoilPainter(rememberMangaCover(manga)),
+      contentDescription = null,
+      modifier = Modifier.fillMaxSize(),
+      contentScale = ContentScale.Crop
+    )
     Box(
       modifier = Modifier
         .fillMaxSize()
@@ -111,5 +127,13 @@ private val shadowGradient = Modifier.drawWithCache {
   )
   onDrawBehind {
     drawRect(gradient)
+  }
+}
+
+private fun Modifier.selectedBackground(isSelected: Boolean) = composed {
+  if (isSelected) {
+    background(MaterialTheme.colors.onBackground.copy(alpha = 0.2f))
+  } else {
+    this
   }
 }

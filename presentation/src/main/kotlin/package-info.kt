@@ -6,12 +6,4 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.domain.library.model
-
-data class CategoryWithCount(val category: Category, val mangaCount: Int) {
-
-  val id get() = category.id
-
-  val name get() = category.name
-
-}
+package tachiyomi.ui

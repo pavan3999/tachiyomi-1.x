@@ -6,14 +6,13 @@
  * file, You can obtain one at http://mozilla.org/MPL/2.0/.
  */
 
-package tachiyomi.ui
+package tachiyomi.ui.main
 
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
 import androidx.compose.foundation.layout.Box
-import androidx.compose.foundation.layout.padding
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
 import androidx.compose.material.Icon
@@ -26,19 +25,22 @@ import androidx.compose.material.icons.filled.History
 import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.NewReleases
 import androidx.compose.runtime.Composable
+import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
+import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.remember
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.navigation.NavType
-import androidx.navigation.compose.KEY_ROUTE
 import androidx.navigation.compose.NavHost
 import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navArgument
-import androidx.navigation.compose.navigate
 import androidx.navigation.compose.rememberNavController
+import com.google.accompanist.insets.navigationBarsPadding
+import tachiyomi.ui.R
 import tachiyomi.ui.browse.CatalogsScreen
 import tachiyomi.ui.browse.catalog.CatalogScreen
 import tachiyomi.ui.categories.CategoriesScreen
@@ -67,14 +69,25 @@ import tachiyomi.ui.updates.UpdatesScreen
 @Composable
 fun MainNavHost(startRoute: Route) {
   val navController = rememberNavController()
+  val currentScreen by navController.currentBackStackEntryAsState()
+  val currentRoute = currentScreen?.destination?.route
+
+  val (requestedHideBottomNav, requestHideBottomNav) = remember { mutableStateOf(false) }
+
+  DisposableEffect(currentScreen) {
+    onDispose {
+      requestHideBottomNav(false)
+    }
+  }
 
   Scaffold(
-    content = { paddingValues ->
-      Box(Modifier.padding(paddingValues)) {
+    modifier = Modifier.navigationBarsPadding(),
+    content = {
+      Box {
         NavHost(navController, startDestination = startRoute.id) {
           // TODO: Have a NavHost per individual top-level route?
 
-          composable(Route.Library.id) { LibraryScreen(navController) }
+          composable(Route.Library.id) { LibraryScreen(navController, requestHideBottomNav) }
           composable(
             "${Route.LibraryManga.id}/{id}",
             arguments = listOf(navArgument("id") { type = NavType.LongType })
@@ -129,13 +142,12 @@ fun MainNavHost(startRoute: Route) {
       }
     },
     bottomBar = {
-      val currentScreen by navController.currentBackStackEntryAsState()
-      val currentRoute = currentScreen?.arguments?.getString(KEY_ROUTE)
+      val isVisible = TopLevelRoutes.isTopLevelRoute(currentRoute) && !requestedHideBottomNav
 
       AnimatedVisibility(
-        visible = TopLevelRoutes.isTopLevelRoute(currentRoute),
+        visible = isVisible,
         enter = slideInVertically(initialOffsetY = { it }),
-        exit = slideOutVertically(targetOffsetY = { it }),
+        exit = slideOutVertically(targetOffsetY = { it })
       ) {
         BottomNavigation(
           backgroundColor = CustomColors.current.bars,
@@ -150,7 +162,7 @@ fun MainNavHost(startRoute: Route) {
               selected = currentRoute == it.route.id,
               onClick = {
                 if (currentRoute != it.route.id) {
-                  navController.popBackStack(navController.graph.startDestination, false)
+                  navController.popBackStack(navController.graph.startDestinationId, false)
                   navController.navigate(it.route.id)
                 }
               },

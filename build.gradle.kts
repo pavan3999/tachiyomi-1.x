@@ -4,7 +4,7 @@ buildscript {
     google()
   }
   dependencies {
-    classpath("com.android.tools.build:gradle:7.0.0-alpha11")
+    classpath("com.android.tools.build:gradle:7.1.0-alpha01")
     classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${Deps.kotlin.version}")
     classpath("org.jetbrains.kotlin:kotlin-serialization:${Deps.kotlin.version}")
   }
@@ -18,10 +18,7 @@ allprojects {
   repositories {
     mavenCentral()
     google()
-    maven { setUrl("https://kotlin.bintray.com/kotlinx") }
     maven { setUrl("https://jitpack.io") }
-    // TODO: remove after io.requery:sqlite-android is published to something else
-    jcenter()
     maven { setUrl("https://oss.sonatype.org/content/repositories/snapshots/") }
   }
 }

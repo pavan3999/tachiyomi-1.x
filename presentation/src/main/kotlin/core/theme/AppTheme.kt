@@ -8,27 +8,27 @@
 
 package tachiyomi.ui.core.theme
 
-import android.app.Activity
-import android.os.Build
-import android.view.View
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.Colors
 import androidx.compose.material.MaterialTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
+import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.takeOrElse
-import androidx.compose.ui.graphics.toArgb
-import androidx.compose.ui.platform.LocalContext
+import com.google.accompanist.coil.LocalImageLoader
+import com.google.accompanist.insets.ProvideWindowInsets
+import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.cancel
 import kotlinx.coroutines.cancelChildren
 import tachiyomi.domain.ui.UiPreferences
 import tachiyomi.domain.ui.model.ThemeMode
+import tachiyomi.ui.core.coil.CoilLoaderFactory
 import tachiyomi.ui.core.viewmodel.BaseViewModel
 import tachiyomi.ui.core.viewmodel.viewModel
 import javax.inject.Inject
@@ -41,18 +41,27 @@ import javax.inject.Inject
 fun AppTheme(content: @Composable () -> Unit) {
   val vm = viewModel<AppThemeViewModel>()
   val (colors, customColors) = vm.getColors()
-  val rememberedCustomColors = remember { CustomColors() }.apply {
-    updateFrom(customColors)
-  }
-  vm.tintSystemBars(rememberedCustomColors.bars)
+  val systemUiController = rememberSystemUiController()
+  val transparentStatusBar = LocalTransparentStatusBar.current.enabled
 
-  CompositionLocalProvider(LocalCustomColors provides rememberedCustomColors) {
-    MaterialTheme(colors = colors, content = content)
+  LaunchedEffect(customColors.isBarLight, transparentStatusBar) {
+    val darkIcons = if (transparentStatusBar) colors.isLight else customColors.isBarLight
+    systemUiController.setStatusBarColor(Color.Transparent, darkIcons)
+  }
+
+  CompositionLocalProvider(
+    LocalCustomColors provides customColors,
+    LocalImageLoader provides vm.coilLoader
+  ) {
+    ProvideWindowInsets {
+      MaterialTheme(colors = colors, content = content)
+    }
   }
 }
 
 private class AppThemeViewModel @Inject constructor(
-  private val uiPreferences: UiPreferences
+  private val uiPreferences: UiPreferences,
+  coilLoaderFactory: CoilLoaderFactory
 ) : BaseViewModel() {
   private val themeMode by uiPreferences.themeMode().asState()
   private val lightTheme by uiPreferences.lightTheme().asState()
@@ -60,6 +69,8 @@ private class AppThemeViewModel @Inject constructor(
 
   private val baseThemeJob = SupervisorJob()
   private val baseThemeScope = CoroutineScope(baseThemeJob)
+
+  val coilLoader = coilLoaderFactory.create()
 
   @Composable
   fun getColors(): Pair<Colors, CustomColors> {
@@ -76,7 +87,8 @@ private class AppThemeViewModel @Inject constructor(
 
     val material = getMaterialColors(baseTheme.colors, colors.primary, colors.secondary)
     val custom = getCustomColors(baseTheme.customColors, colors.bars)
-    return material to custom
+    val rememberedCustom = remember { CustomColors() }.apply { updateFrom(custom) }
+    return material to rememberedCustom
   }
 
   @Composable
@@ -123,31 +135,6 @@ private class AppThemeViewModel @Inject constructor(
       bars = appbar,
       onBars = if (appbar.luminance() > 0.5) Color.Black else Color.White
     )
-  }
-
-  @Composable
-  fun tintSystemBars(color: Color) {
-    val activity = LocalContext.current as Activity
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.M) {
-      activity.window.statusBarColor = color.toArgb()
-      with(activity.window.decorView) {
-        systemUiVisibility = if (color.luminance() > 0.5f) {
-          systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR
-        } else {
-          systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_STATUS_BAR.inv()
-        }
-      }
-    }
-    if (Build.VERSION.SDK_INT >= Build.VERSION_CODES.O) {
-      activity.window.navigationBarColor = color.toArgb()
-      with(activity.window.decorView) {
-        systemUiVisibility = if (color.luminance() > 0.5f) {
-          systemUiVisibility or View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR
-        } else {
-          systemUiVisibility and View.SYSTEM_UI_FLAG_LIGHT_NAVIGATION_BAR.inv()
-        }
-      }
-    }
   }
 
   override fun onDestroy() {
