@@ -4,6 +4,15 @@ on:
     branches:
       - dev
   pull_request:
+  # Manual triggers
+  workflow_dispatch:
+    inputs:
+      git-ref:
+        description: Git Ref (Optional)
+        required: false
+      dry-run:
+        description: Creates a draft release
+        required: false
 
 jobs:
   check_wrapper:
