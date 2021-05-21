@@ -8,48 +8,59 @@
 
 package tachiyomi.core.prefs
 
-import android.content.SharedPreferences
+import androidx.datastore.core.DataStore
+import androidx.datastore.preferences.core.MutablePreferences
+import androidx.datastore.preferences.core.Preferences
+import androidx.datastore.preferences.core.Preferences.Key
+import androidx.datastore.preferences.core.edit
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.SharedFlow
 import kotlinx.coroutines.flow.SharingStarted
 import kotlinx.coroutines.flow.StateFlow
-import kotlinx.coroutines.flow.filter
+import kotlinx.coroutines.flow.distinctUntilChanged
+import kotlinx.coroutines.flow.drop
+import kotlinx.coroutines.flow.first
 import kotlinx.coroutines.flow.map
 import kotlinx.coroutines.flow.stateIn
+import kotlinx.coroutines.launch
+import kotlinx.coroutines.runBlocking
 
 /**
- * An implementation of [Preference] backed by Android's [SharedPreferences].
+ * An implementation of [Preference] backed by Androidx's [DataStore].
+ *
+ * Read operations are blocking, but writes are performed in the given [scope], which should be
+ * an IO thread.
  */
-internal class AndroidPreference<T>(
-  private val preferences: SharedPreferences,
-  private val key: String,
-  private val defaultValue: T,
-  private val adapter: Adapter<T>,
-  private val keyChanges: SharedFlow<String>
+internal sealed class AndroidPreference<K, T>(
+  private val store: DataStore<Preferences>,
+  private val scope: CoroutineScope,
+  private val key: Key<K>,
+  private val defaultValue: T
 ) : Preference<T> {
 
-  interface Adapter<T> {
-    fun get(key: String, preferences: SharedPreferences): T
+  /**
+   * Reads the current value of this [key] in the given [preferences].
+   */
+  abstract fun read(preferences: Preferences, key: Key<K>): T?
 
-    fun set(key: String, value: T, editor: SharedPreferences.Editor)
-  }
+  /**
+   * Writes a new [value] to the [key] of the given [preferences].
+   */
+  abstract fun write(preferences: MutablePreferences, key: Key<K>, value: T)
 
   /**
    * Returns the key of this preference.
    */
   override fun key(): String {
-    return key
+    return key.name
   }
 
   /**
    * Returns the current value of this preference.
    */
   override fun get(): T {
-    return if (!preferences.contains(key)) {
-      defaultValue
-    } else {
-      adapter.get(key, preferences)
+    return runBlocking {
+      read(store.data.first(), key) ?: defaultValue
     }
   }
 
@@ -57,27 +68,31 @@ internal class AndroidPreference<T>(
    * Sets a new [value] for this preference.
    */
   override fun set(value: T) {
-    val editor = preferences.edit()
-    adapter.set(key, value, editor)
-    editor.apply()
+    scope.launch {
+      store.edit { write(it, key, value) }
+    }
   }
 
   /**
    * Returns whether there's an existing entry for this preference.
    */
   override fun isSet(): Boolean {
-    return preferences.contains(key)
+    return runBlocking {
+      store.data.first().contains(key)
+    }
   }
 
   /**
    * Deletes the entry of this preference.
    */
   override fun delete() {
-    preferences.edit().remove(key).apply()
+    scope.launch {
+      store.edit { it.remove(key) }
+    }
   }
 
   /**
-   * Returns the default value of this preference
+   * Returns the default value of this preference.
    */
   override fun defaultValue(): T {
     return defaultValue
@@ -87,9 +102,10 @@ internal class AndroidPreference<T>(
    * Returns a cold [Flow] of this preference to receive updates when its value changes.
    */
   override fun changes(): Flow<T> {
-    return keyChanges
-      .filter { it == key }
-      .map { get() }
+    return store.data
+      .drop(1)
+      .map { read(it, key) ?: defaultValue }
+      .distinctUntilChanged()
   }
 
   /**
@@ -98,6 +114,48 @@ internal class AndroidPreference<T>(
    */
   override fun stateIn(scope: CoroutineScope): StateFlow<T> {
     return changes().stateIn(scope, SharingStarted.Eagerly, get())
+  }
+
+  /**
+   * Implementation of an [AndroidPreference] for the supported primitives.
+   */
+  internal class Primitive<T>(
+    store: DataStore<Preferences>,
+    scope: CoroutineScope,
+    key: Key<T>,
+    defaultValue: T
+  ) : AndroidPreference<T, T>(store, scope, key, defaultValue) {
+
+    override fun read(preferences: Preferences, key: Key<T>): T? {
+      return preferences[key]
+    }
+
+    override fun write(preferences: MutablePreferences, key: Key<T>, value: T) {
+      preferences[key] = value
+    }
+
+  }
+
+  /**
+   * Implementation of an [AndroidPreference] for any object that is serializable to a String.
+   */
+  internal class Object<T>(
+    store: DataStore<Preferences>,
+    scope: CoroutineScope,
+    key: Key<String>,
+    defaultValue: T,
+    private val serializer: (T) -> String,
+    private val deserializer: (String) -> T
+  ) : AndroidPreference<String, T>(store, scope, key, defaultValue) {
+
+    override fun read(preferences: Preferences, key: Key<String>): T? {
+      return preferences[key]?.let(deserializer)
+    }
+
+    override fun write(preferences: MutablePreferences, key: Key<String>, value: T) {
+      preferences[key] = serializer(value)
+    }
+
   }
 
 }
