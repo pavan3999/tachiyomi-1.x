@@ -5,18 +5,20 @@ plugins {
 }
 
 dependencies {
+  coreLibraryDesugaring(Deps.desugarJdkLibs)
+
   apiProject(Projects.common)
 
-  implementation(Deps.duktape)
-  implementation(Deps.androidX.core)
-  implementation(Deps.androidX.sqlite)
-  implementation(Deps.androidX.dataStore)
-  implementation(Deps.coroutines.core)
-  implementation(Deps.coroutines.android)
+  implementation(Deps.kotlin.coroutines.core)
+  implementation(Deps.kotlin.coroutines.android)
+  implementation(Deps.androidx.core)
+  implementation(Deps.androidx.sqlite)
+  implementation(Deps.androidx.dataStore)
+  implementation(Deps.androidx.lifecycle.common)
+  implementation(Deps.androidx.lifecycle.process)
+  implementation(Deps.androidx.lifecycle.extensions)
+  implementation(Deps.quickjs)
   implementation(Deps.flomo)
-  implementation(Deps.lifecycle.common)
-  implementation(Deps.lifecycle.process)
-  implementation(Deps.lifecycle.extensions)
 
   implementation(Deps.toothpick.runtime)
   implementation(Deps.toothpick.ktp)

@@ -13,7 +13,7 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.layout.ContentScale
 import androidx.compose.ui.text.font.FontWeight
 import androidx.compose.ui.text.style.TextOverflow
-import com.google.accompanist.coil.rememberCoilPainter
+import coil.compose.rememberImagePainter
 import tachiyomi.ui.core.coil.MangaCover
 
 @Composable
@@ -35,7 +35,7 @@ fun MangaListItemImage(
   mangaCover: MangaCover
 ) {
   Image(
-    painter = rememberCoilPainter(mangaCover),
+    painter = rememberImagePainter(mangaCover),
     contentDescription = null,
     modifier = modifier,
     contentScale = ContentScale.Crop

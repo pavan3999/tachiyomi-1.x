@@ -8,6 +8,7 @@
 
 package tachiyomi.ui.main
 
+import android.content.Intent
 import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.slideInVertically
@@ -19,11 +20,14 @@ import androidx.compose.material.Icon
 import androidx.compose.material.Scaffold
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.Book
+import androidx.compose.material.icons.filled.CollectionsBookmark
 import androidx.compose.material.icons.filled.Explore
-import androidx.compose.material.icons.filled.History
-import androidx.compose.material.icons.filled.MoreHoriz
 import androidx.compose.material.icons.filled.NewReleases
+import androidx.compose.material.icons.outlined.CollectionsBookmark
+import androidx.compose.material.icons.outlined.Explore
+import androidx.compose.material.icons.outlined.History
+import androidx.compose.material.icons.outlined.MoreHoriz
+import androidx.compose.material.icons.outlined.NewReleases
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.DisposableEffect
 import androidx.compose.runtime.getValue
@@ -39,18 +43,21 @@ import androidx.navigation.compose.composable
 import androidx.navigation.compose.currentBackStackEntryAsState
 import androidx.navigation.compose.navArgument
 import androidx.navigation.compose.rememberNavController
+import androidx.navigation.navDeepLink
 import com.google.accompanist.insets.navigationBarsPadding
 import tachiyomi.ui.R
 import tachiyomi.ui.browse.CatalogsScreen
 import tachiyomi.ui.browse.catalog.CatalogScreen
 import tachiyomi.ui.categories.CategoriesScreen
 import tachiyomi.ui.core.theme.CustomColors
+import tachiyomi.ui.deeplink.DeepLinkHandlerScreen
 import tachiyomi.ui.downloads.DownloadQueueScreen
 import tachiyomi.ui.history.HistoryScreen
 import tachiyomi.ui.library.LibraryScreen
 import tachiyomi.ui.manga.MangaScreen
-import tachiyomi.ui.more.AboutScreen
 import tachiyomi.ui.more.MoreScreen
+import tachiyomi.ui.more.about.AboutScreen
+import tachiyomi.ui.more.about.LicensesScreen
 import tachiyomi.ui.more.settings.SettingsAdvancedScreen
 import tachiyomi.ui.more.settings.SettingsAppearance
 import tachiyomi.ui.more.settings.SettingsBackupScreen
@@ -63,7 +70,11 @@ import tachiyomi.ui.more.settings.SettingsReaderScreen
 import tachiyomi.ui.more.settings.SettingsScreen
 import tachiyomi.ui.more.settings.SettingsSecurityScreen
 import tachiyomi.ui.more.settings.SettingsTrackingScreen
+import tachiyomi.ui.reader.ReaderScreen
 import tachiyomi.ui.updates.UpdatesScreen
+import tachiyomi.ui.webview.WebViewScreen
+import java.net.URLDecoder
+import java.nio.charset.StandardCharsets
 
 @OptIn(ExperimentalAnimationApi::class)
 @Composable
@@ -87,13 +98,45 @@ fun MainNavHost(startRoute: Route) {
         NavHost(navController, startDestination = startRoute.id) {
           // TODO: Have a NavHost per individual top-level route?
 
+          composable(
+            "${Route.DeepLink.id}/{referrer}?url={url}",
+            arguments = listOf(
+              navArgument("referrer") { type = NavType.StringType },
+              navArgument("url") { type = NavType.StringType },
+            ),
+            deepLinks = listOf(navDeepLink {
+              uriPattern = "tachiyomi://deeplink/{referrer}?url={url}"
+            }),
+          ) { backStackEntry ->
+            val referrer = backStackEntry.arguments?.getString("referrer") as String
+            val url = backStackEntry.arguments?.getString("url") as String
+
+            DeepLinkHandlerScreen(navController, referrer, url)
+          }
+
           composable(Route.Library.id) { LibraryScreen(navController, requestHideBottomNav) }
           composable(
             "${Route.LibraryManga.id}/{id}",
-            arguments = listOf(navArgument("id") { type = NavType.LongType })
+            arguments = listOf(navArgument("id") { type = NavType.LongType }),
+            deepLinks = listOf(navDeepLink {
+              action = Intent.ACTION_VIEW
+              uriPattern = "tachiyomi://manga/{id}"
+            }),
           ) { backStackEntry ->
             val mangaId = backStackEntry.arguments?.getLong("id") as Long
             MangaScreen(navController, mangaId)
+          }
+
+          composable(
+            "${Route.Reader.id}/{id}",
+            arguments = listOf(navArgument("id") { type = NavType.LongType }),
+            deepLinks = listOf(navDeepLink {
+              action = Intent.ACTION_VIEW
+              uriPattern = "tachiyomi://chapter/{id}"
+            }),
+          ) { backStackEntry ->
+            val chapterId = backStackEntry.arguments?.getLong("id") as Long
+            ReaderScreen(navController, chapterId)
           }
 
           composable(Route.Updates.id) { UpdatesScreen(navController) }
@@ -119,10 +162,25 @@ fun MainNavHost(startRoute: Route) {
             MangaScreen(navController, mangaId)
           }
 
+          composable(
+            "${Route.WebView.id}/{sourceId}/{encodedUrl}",
+            arguments = listOf(
+              navArgument("sourceId") { type = NavType.LongType },
+              navArgument("encodedUrl") { type = NavType.StringType },
+            )
+          ) { backStackEntry ->
+            val sourceId = backStackEntry.arguments?.getLong("sourceId") as Long
+            val encodedUrl = backStackEntry.arguments?.getString("encodedUrl") as String
+            val url = URLDecoder.decode(encodedUrl, StandardCharsets.UTF_8.toString())
+            WebViewScreen(navController, sourceId, url)
+          }
+
           composable(Route.More.id) { MoreScreen(navController) }
           composable(Route.Categories.id) { CategoriesScreen(navController) }
           composable(Route.DownloadQueue.id) { DownloadQueueScreen(navController) }
+
           composable(Route.About.id) { AboutScreen(navController) }
+          composable(Route.Licenses.id) { LicensesScreen(navController) }
 
           composable(Route.Settings.id) { SettingsScreen(navController) }
           composable(Route.SettingsGeneral.id) { SettingsGeneralScreen(navController) }
@@ -154,12 +212,18 @@ fun MainNavHost(startRoute: Route) {
           contentColor = CustomColors.current.onBars,
         ) {
           TopLevelRoutes.values.forEach {
+            val isSelected = currentRoute == it.route.id
             BottomNavigationItem(
-              icon = { Icon(it.icon, contentDescription = null) },
+              icon = {
+                Icon(
+                  if (isSelected) it.selectedIcon else it.unselectedIcon,
+                  contentDescription = null
+                )
+              },
               label = {
                 Text(stringResource(it.text), maxLines = 1, overflow = TextOverflow.Ellipsis)
               },
-              selected = currentRoute == it.route.id,
+              selected = isSelected,
               onClick = {
                 if (currentRoute != it.route.id) {
                   navController.popBackStack(navController.graph.startDestinationId, false)
@@ -174,14 +238,29 @@ fun MainNavHost(startRoute: Route) {
   )
 }
 
-private enum class TopLevelRoutes(val route: Route, val text: Int, val icon: ImageVector) {
-  Library(Route.Library, R.string.library_label, Icons.Default.Book),
-  Updates(Route.Updates, R.string.updates_label, Icons.Default.NewReleases),
-  History(Route.History, R.string.history_label, Icons.Default.History),
-  Browse(Route.Browse, R.string.browse_label, Icons.Default.Explore),
-  More(Route.More, R.string.more_label, Icons.Default.MoreHoriz);
+private enum class TopLevelRoutes(
+  val route: Route,
+  val text: Int,
+  val selectedIcon: ImageVector,
+  val unselectedIcon: ImageVector = selectedIcon,
+) {
+
+  Library(
+    Route.Library, R.string.library_label, Icons.Default.CollectionsBookmark, Icons
+      .Outlined.CollectionsBookmark
+  ),
+  Updates(
+    Route.Updates,
+    R.string.updates_label,
+    Icons.Default.NewReleases,
+    Icons.Outlined.NewReleases
+  ),
+  History(Route.History, R.string.history_label, Icons.Outlined.History),
+  Browse(Route.Browse, R.string.browse_label, Icons.Default.Explore, Icons.Outlined.Explore),
+  More(Route.More, R.string.more_label, Icons.Outlined.MoreHoriz);
 
   companion object {
+
     val values = values().toList()
     fun isTopLevelRoute(route: String?): Boolean {
       return route != null && values.any { it.route.id == route }

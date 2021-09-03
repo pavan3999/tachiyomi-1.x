@@ -29,7 +29,6 @@ jobs:
   build:
     name: Build app
     needs: check_wrapper
-    if: "!startsWith(github.event.head_commit.message, '[SKIP CI]')"
     runs-on: ubuntu-latest
 
     steps:
@@ -41,7 +40,7 @@ jobs:
       - name: Clone repo
         uses: actions/checkout@v2
 
-      - name: Set up JDK 11
+      - name: Set up JDK
         uses: actions/setup-java@v1
         with:
           java-version: 11

@@ -18,10 +18,15 @@ android {
 }
 
 dependencies {
+  coreLibraryDesugaring(Deps.desugarJdkLibs)
+
   implementationProject(Projects.core)
   implementationProject(Projects.domain)
   implementationProject(Projects.data)
   implementationProject(Projects.presentation)
+
+  implementation(Deps.androidx.core)
+  implementation(Deps.androidx.emoji)
 
   implementation(Deps.toothpick.runtime)
   implementation(Deps.toothpick.smoothie)

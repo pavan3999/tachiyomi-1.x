@@ -22,7 +22,7 @@ fun DownloadQueueScreen(navController: NavHostController) {
   Scaffold(
     topBar = {
       Toolbar(
-        title = { Text(stringResource(R.string.download_queue)) },
+        title = { Text(stringResource(R.string.download_queue_label)) },
         navigationIcon = { BackIconButton(navController) },
       )
     }

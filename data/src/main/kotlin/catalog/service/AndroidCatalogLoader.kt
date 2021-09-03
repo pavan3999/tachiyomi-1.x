@@ -8,6 +8,7 @@
 
 package tachiyomi.data.catalog.service
 
+import android.annotation.SuppressLint
 import android.app.Application
 import android.content.pm.PackageInfo
 import android.content.pm.PackageManager
@@ -47,13 +48,14 @@ internal class AndroidCatalogLoader @Inject constructor(
   /**
    * Return a list of all the installed catalogs initialized concurrently.
    */
+  @SuppressLint("QueryPermissionsNeeded")
   override fun loadAll(): List<CatalogLocal> {
     val bundled = mutableListOf<CatalogLocal>()
     if (BuildConfig.DEBUG) {
       val testCatalog = CatalogBundled(TestSource(), "Source used for testing")
       bundled.add(testCatalog)
     }
-    
+
     val systemPkgs = pkgManager.getInstalledPackages(PACKAGE_FLAGS).filter(::isPackageAnExtension)
     val localPkgs = File(context.filesDir, "catalogs").listFiles()
       .orEmpty()
@@ -129,8 +131,16 @@ internal class AndroidCatalogLoader @Inject constructor(
     val loader = DexClassLoader(file.absolutePath, dexOutputDir, null, context.classLoader)
     val source = loadSource(pkgName, loader, data) ?: return null
 
-    return CatalogInstalled.Locally(source.name, data.description, source, pkgName,
-      data.versionName, data.versionCode, file.parentFile!!)
+    return CatalogInstalled.Locally(
+      name = source.name,
+      description = data.description,
+      source = source,
+      pkgName = pkgName,
+      versionName = data.versionName,
+      versionCode = data.versionCode,
+      nsfw = data.nsfw,
+      installDir = file.parentFile!!
+    )
   }
 
   /**
@@ -147,8 +157,15 @@ internal class AndroidCatalogLoader @Inject constructor(
     val loader = PathClassLoader(pkgInfo.applicationInfo.sourceDir, null, context.classLoader)
     val source = loadSource(pkgName, loader, data) ?: return null
 
-    return CatalogInstalled.SystemWide(source.name, data.description, source, pkgName,
-      data.versionName, data.versionCode)
+    return CatalogInstalled.SystemWide(
+      name = source.name,
+      description = data.description,
+      source = source,
+      pkgName = pkgName,
+      versionName = data.versionName,
+      versionCode = data.versionCode,
+      nsfw = data.nsfw
+    )
   }
 
   /**
@@ -162,13 +179,15 @@ internal class AndroidCatalogLoader @Inject constructor(
 
   private fun validateMetadata(pkgName: String, pkgInfo: PackageInfo): ValidatedData? {
     if (!isPackageAnExtension(pkgInfo)) {
-      Log.warn("Failed to load catalog, package {} isn't an catalog", pkgName)
+      Log.warn("Failed to load catalog, package {} isn't a catalog", pkgName)
       return null
     }
 
     if (pkgName != pkgInfo.packageName) {
-      Log.warn("Failed to load catalog, package name mismatch: Provided {} Actual {}",
-        pkgName, pkgInfo.packageName)
+      Log.warn(
+        "Failed to load catalog, package name mismatch: Provided {} Actual {}",
+        pkgName, pkgInfo.packageName
+      )
       return null
     }
 
@@ -202,9 +221,11 @@ internal class AndroidCatalogLoader @Inject constructor(
       sourceClassName
     }
 
+    val nsfw = metadata.getInt(METADATA_NSFW, 0) == 1
+
     val dependencies = Dependencies(http, PrefixedPreferenceStore(catalogPreferences, pkgName))
 
-    return ValidatedData(versionCode, versionName, description, classToLoad, dependencies)
+    return ValidatedData(versionCode, versionName, description, nsfw, classToLoad, dependencies)
   }
 
   private fun loadSource(pkgName: String, loader: ClassLoader, data: ValidatedData): Source? {
@@ -224,6 +245,7 @@ internal class AndroidCatalogLoader @Inject constructor(
     val versionCode: Int,
     val versionName: String,
     val description: String,
+    val nsfw: Boolean,
     val classToLoad: String,
     val dependencies: Dependencies
   )

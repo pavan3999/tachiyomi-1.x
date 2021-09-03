@@ -12,6 +12,7 @@ import androidx.compose.runtime.Composable
 import androidx.compose.runtime.remember
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.manga.model.Manga
+import tachiyomi.domain.updates.model.UpdatesManga
 
 @Composable
 fun rememberMangaCover(manga: Manga): MangaCover {
@@ -22,6 +23,13 @@ fun rememberMangaCover(manga: Manga): MangaCover {
 
 @Composable
 fun rememberMangaCover(manga: LibraryManga): MangaCover {
+  return remember(manga.id) {
+    MangaCover.from(manga)
+  }
+}
+
+@Composable
+fun rememberMangaCover(manga: UpdatesManga): MangaCover {
   return remember(manga.id) {
     MangaCover.from(manga)
   }

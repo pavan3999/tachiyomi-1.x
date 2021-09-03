@@ -4,14 +4,15 @@ buildscript {
     google()
   }
   dependencies {
-    classpath("com.android.tools.build:gradle:7.1.0-alpha01")
+    classpath("com.android.tools.build:gradle:7.0.1")
     classpath("org.jetbrains.kotlin:kotlin-gradle-plugin:${Deps.kotlin.version}")
     classpath("org.jetbrains.kotlin:kotlin-serialization:${Deps.kotlin.version}")
+    classpath(Deps.aboutLibraries.plugin)
   }
 }
 
 plugins {
-  id("com.github.ben-manes.versions") version "0.36.0"
+  id("com.github.ben-manes.versions") version "0.39.0"
 }
 
 allprojects {
@@ -41,13 +42,12 @@ subprojects {
     useJUnitPlatform()
   }
 
-  @Suppress("DEPRECATION")
   plugins.withType<com.android.build.gradle.BasePlugin> {
     configure<com.android.build.gradle.BaseExtension> {
       compileSdkVersion(Config.compileSdk)
       defaultConfig {
-        minSdkVersion(Config.minSdk)
-        targetSdkVersion(Config.targetSdk)
+        minSdk = Config.minSdk
+        targetSdk = Config.targetSdk
         versionCode(Config.versionCode)
         versionName(Config.versionName)
         ndk {
@@ -55,24 +55,24 @@ subprojects {
         }
       }
       compileOptions {
+        isCoreLibraryDesugaringEnabled = true
         sourceCompatibility(JavaVersion.VERSION_1_8)
         targetCompatibility(JavaVersion.VERSION_1_8)
       }
-      sourceSets["main"].java.srcDirs("src/main/kotlin")
     }
   }
 
   plugins.withType<JacocoPlugin> {
     configure<JacocoPluginExtension> {
-      toolVersion = "0.8.6"
+      toolVersion = "0.8.7"
     }
   }
 
   afterEvaluate {
     tasks.withType<JacocoReport> {
       reports {
-        xml.isEnabled = true
-        html.isEnabled = false
+        xml.required.set(true)
+        html.required.set(false)
       }
     }
   }

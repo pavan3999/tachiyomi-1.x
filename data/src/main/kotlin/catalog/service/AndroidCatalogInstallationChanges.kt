@@ -22,7 +22,9 @@ internal class AndroidCatalogInstallationChanges @Inject constructor(
   context: Application
 ) : CatalogInstallationChanges {
 
-  override val flow = MutableSharedFlow<CatalogInstallationChange>()
+  override val flow = MutableSharedFlow<CatalogInstallationChange>(
+    extraBufferCapacity = Int.MAX_VALUE
+  )
 
   init {
     val filter = IntentFilter().apply {

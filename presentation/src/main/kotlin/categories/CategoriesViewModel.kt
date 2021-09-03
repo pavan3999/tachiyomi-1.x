@@ -8,9 +8,6 @@
 
 package tachiyomi.ui.categories
 
-import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
-import androidx.compose.runtime.setValue
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
@@ -24,21 +21,20 @@ import tachiyomi.ui.core.viewmodel.BaseViewModel
 import javax.inject.Inject
 
 class CategoriesViewModel @Inject constructor(
+  private val state: CategoriesStateImpl,
   private val getCategories: GetCategories,
   private val createCategoryWithName: CreateCategoryWithName,
   private val renameCategory: RenameCategory,
   private val reorderCategory: ReorderCategory,
   private val deleteCategory: DeleteCategories
-) : BaseViewModel() {
-
-  var categories by mutableStateOf(emptyList<Category>())
-    private set
-  var dialog by mutableStateOf<Dialog?>(null)
-    private set
+) : BaseViewModel(), CategoriesState by state {
 
   init {
     getCategories.subscribe()
-      .onEach { categories = it.filterNot(Category::isSystemCategory) }
+      .onEach {
+        state.isLoading = false
+        state.categories = it.filterNot(Category::isSystemCategory)
+      }
       .launchIn(scope)
   }
 
@@ -70,22 +66,6 @@ class CategoriesViewModel @Inject constructor(
     scope.launch {
       reorderCategory.await(category, category.order + 1)
     }
-  }
-
-  fun showCreateDialog() {
-    dialog = Dialog.Create
-  }
-
-  fun showRenameDialog(category: Category) {
-    dialog = Dialog.Rename(category)
-  }
-
-  fun showDeleteDialog(category: Category) {
-    dialog = Dialog.Delete(category)
-  }
-
-  fun dismissDialog() {
-    dialog = null
   }
 
   sealed class Dialog {

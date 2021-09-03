@@ -8,85 +8,52 @@
 
 package tachiyomi.ui.updates
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
+import androidx.compose.animation.Crossfade
 import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.outlined.Download
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import tachiyomi.domain.manga.model.Manga
 import tachiyomi.ui.R
-import tachiyomi.ui.core.coil.rememberMangaCover
-import tachiyomi.ui.core.components.MangaListItem
-import tachiyomi.ui.core.components.MangaListItemColumn
-import tachiyomi.ui.core.components.MangaListItemImage
-import tachiyomi.ui.core.components.MangaListItemSubtitle
-import tachiyomi.ui.core.components.MangaListItemTitle
-import tachiyomi.ui.core.components.Toolbar
+import tachiyomi.ui.core.components.EmptyScreen
+import tachiyomi.ui.core.components.LoadingScreen
+import tachiyomi.ui.core.viewmodel.viewModel
+import tachiyomi.ui.main.Route
+import tachiyomi.ui.updates.components.UpdatesContent
+import tachiyomi.ui.updates.components.UpdatesToolbar
 
 @Composable
 fun UpdatesScreen(navController: NavController) {
+  val vm = viewModel<UpdatesViewModel, UpdatesState>(
+    initialState = { UpdatesState() }
+  )
+
   Scaffold(
     topBar = {
-      Toolbar(title = { Text(stringResource(R.string.updates_label)) })
-    }
-  ) {
-  }
-}
-
-@Composable
-fun UpdatesItem(
-  manga: Manga,
-  onClickItem: (Manga) -> Unit = { /* TODO Open chapter in reader */ },
-  onClickCover: (Manga) -> Unit = { /* TODO Open manga details */ },
-  onClickDownload: (Manga) -> Unit = { /* TODO */}
-) {
-  MangaListItem(
-    modifier = Modifier
-      .clickable { onClickItem(manga) }
-      .height(56.dp)
-      .fillMaxWidth()
-      .padding(end = 4.dp),
-  ) {
-    MangaListItemImage(
-      modifier = Modifier
-        .clickable { onClickCover(manga) }
-        .fillMaxHeight()
-        .aspectRatio(1f)
-        .padding(start = 16.dp, top = 8.dp, bottom = 8.dp)
-        .clip(MaterialTheme.shapes.medium),
-      mangaCover = rememberMangaCover(manga)
-    )
-    MangaListItemColumn(
-      modifier = Modifier
-        .weight(1f)
-        .padding(start = 16.dp)
-    ) {
-      MangaListItemTitle(
-        text = manga.title,
-        fontWeight = FontWeight.SemiBold
-      )
-      MangaListItemSubtitle(
-        text = "Chapter 69" // TODO
+      UpdatesToolbar(
+        state = vm,
+        onClickCancelSelection = { vm.unselectAll() },
+        onClickSelectAll = { vm.selectAll() },
+        onClickFlipSelection = { vm.flipSelection() },
+        onClickRefresh = { vm.updateLibrary() }
       )
     }
-    // TODO Replace with Download Composable when that is implemented
-    IconButton(onClick = { onClickDownload(manga) }) {
-      Icon(imageVector = Icons.Outlined.Download, contentDescription = "")
+  ) {
+    Crossfade(targetState = Pair(vm.isLoading, vm.isEmpty)) { (isLoading, isEmpty) ->
+      when {
+        isLoading -> LoadingScreen()
+        isEmpty -> EmptyScreen(R.string.information_no_updates)
+        else -> UpdatesContent(
+          state = vm,
+          onClickItem = {
+            when {
+              vm.hasSelection -> vm.toggleManga(it)
+              else -> navController.navigate("${Route.Reader.id}/${it.chapterId}")
+            }
+          },
+          onLongClickItem = { vm.toggleManga(it) },
+          onClickCover = { navController.navigate("${Route.LibraryManga.id}/${it.id}") },
+          onClickDownload = { /* TOOD */ }
+        )
+      }
     }
   }
 }

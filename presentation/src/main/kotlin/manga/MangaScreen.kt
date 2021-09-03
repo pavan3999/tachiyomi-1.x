@@ -28,6 +28,9 @@ import tachiyomi.ui.core.components.LoadingScreen
 import tachiyomi.ui.core.components.Toolbar
 import tachiyomi.ui.core.theme.TransparentStatusBar
 import tachiyomi.ui.core.viewmodel.viewModel
+import tachiyomi.ui.main.Route
+import java.net.URLEncoder
+import java.nio.charset.StandardCharsets
 
 @Composable
 fun MangaScreen(
@@ -58,7 +61,10 @@ fun MangaScreen(
 
   // TODO
   val onTracking = {}
-  val onWebView = {}
+  val onWebView = {
+    val url = URLEncoder.encode(manga.key, StandardCharsets.UTF_8.toString())
+    navController.navigate("${Route.WebView.id}/${manga.sourceId}/$url")
+  }
   val onFavorite = { vm.toggleFavorite() }
   val onToggle = { vm.toggleExpandedSummary() }
 
@@ -93,7 +99,13 @@ fun MangaScreen(
         }
 
         items(vm.chapters) { chapter ->
-          ChapterRow(chapter, false, {})
+          ChapterRow(
+            chapter = chapter,
+            isDownloaded = false,
+            onClick = { navController.navigate("${Route.Reader.id}/${chapter.id}") },
+            onDownloadClick = {},
+            onDeleteClick = {},
+          )
         }
       }
     }

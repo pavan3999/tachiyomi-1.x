@@ -8,17 +8,18 @@
 
 package tachiyomi.ui.library
 
+import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
-import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateListOf
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.setValue
+import com.google.accompanist.pager.ExperimentalPagerApi
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.SharingStarted
+import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.flatMapLatest
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.map
@@ -29,45 +30,27 @@ import tachiyomi.domain.library.interactor.GetLibraryCategory
 import tachiyomi.domain.library.interactor.GetUserCategories
 import tachiyomi.domain.library.interactor.SetCategoriesForMangas
 import tachiyomi.domain.library.interactor.UpdateLibraryCategory
-import tachiyomi.domain.library.model.CategoryWithCount
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.ui.core.viewmodel.BaseViewModel
 import javax.inject.Inject
 
+@OptIn(ExperimentalMaterialApi::class, ExperimentalPagerApi::class)
 class LibraryViewModel @Inject constructor(
+  private val state: LibraryStateImpl,
   private val getUserCategories: GetUserCategories,
   private val getLibraryCategory: GetLibraryCategory,
   private val setCategoriesForMangas: SetCategoriesForMangas,
   private val libraryPreferences: LibraryPreferences,
   private val updateLibraryCategory: UpdateLibraryCategory
-) : BaseViewModel() {
+) : BaseViewModel(), LibraryState by state {
 
-  private val lastUsedCategoryPreference = libraryPreferences.lastUsedCategory()
-
-  var categories by mutableStateOf(emptyList<CategoryWithCount>())
-    private set
-  var selectedCategoryIndex by mutableStateOf(0)
-    private set
-  var library by mutableStateOf(emptyList<LibraryManga>())
-    private set
-  val selectedManga = mutableStateListOf<Long>()
-  var showUpdatingCategory by mutableStateOf(false)
-    private set
-  var sheetVisible by mutableStateOf(false)
-  var searchMode by mutableStateOf(false)
-    private set
-  var searchQuery by mutableStateOf("")
-    private set
-  val selectionMode by derivedStateOf { selectedManga.isNotEmpty() }
-
+  var lastUsedCategory by libraryPreferences.lastUsedCategory().asState()
   val filters by libraryPreferences.filters().asState()
   val sorting by libraryPreferences.sorting().asState()
   val displayMode by libraryPreferences.displayMode().asState()
   val showCategoryTabs by libraryPreferences.showCategoryTabs().asState()
   val showCountInCategory by libraryPreferences.showCountInCategory().asState()
-
-  val selectedCategory get() = categories.getOrNull(selectedCategoryIndex)
 
   private val loadedManga = mutableMapOf<Long, List<LibraryManga>>()
 
@@ -76,11 +59,11 @@ class LibraryViewModel @Inject constructor(
       .flatMapLatest { showAll ->
         getUserCategories.subscribe(showAll)
           .onEach { categories ->
-            val lastCategoryId = lastUsedCategoryPreference.get()
+            val lastCategoryId = lastUsedCategory
             val index = categories.indexOfFirst { it.id == lastCategoryId }.takeIf { it != -1 } ?: 0
 
-            this.categories = categories
-            this.selectedCategoryIndex = index
+            state.categories = categories
+            state.selectedCategoryIndex = index
           }
       }
       .launchIn(scope)
@@ -90,8 +73,8 @@ class LibraryViewModel @Inject constructor(
     if (index == selectedCategoryIndex) return
     val categories = categories
     val category = categories.getOrNull(index) ?: return
-    selectedCategoryIndex = index
-    lastUsedCategoryPreference.set(category.id)
+    state.selectedCategoryIndex = index
+    lastUsedCategory = category.id
   }
 
   @Composable
@@ -108,7 +91,7 @@ class LibraryViewModel @Inject constructor(
 
     return remember(sorting, filters, searchQuery) {
       val query = searchQuery
-      if (query.isBlank()) {
+      if (query.isNullOrBlank()) {
         unfiltered
       } else {
         unfiltered.map { mangas ->
@@ -120,45 +103,39 @@ class LibraryViewModel @Inject constructor(
     }.collectAsState(emptyList())
   }
 
+  fun getColumnsForOrientation(isLandscape: Boolean, scope: CoroutineScope): StateFlow<Int> {
+    return if (isLandscape) {
+      libraryPreferences.columnsInLandscape()
+    } else {
+      libraryPreferences.columnsInPortrait()
+    }.stateIn(scope)
+  }
+
   fun toggleManga(manga: LibraryManga) {
     if (manga.id in selectedManga) {
-      selectedManga.remove(manga.id)
+      state.selectedManga.remove(manga.id)
     } else {
-      selectedManga.add(manga.id)
+      state.selectedManga.add(manga.id)
     }
   }
 
   fun unselectAll() {
-    selectedManga.clear()
+    state.selectedManga.clear()
   }
 
   fun selectAllInCurrentCategory() {
     val mangaInCurrentCategory = loadedManga[selectedCategory?.id] ?: return
     val currentSelected = selectedManga.toList()
     val mangaIds = mangaInCurrentCategory.map { it.id }.filter { it !in currentSelected }
-    selectedManga.addAll(mangaIds)
+    state.selectedManga.addAll(mangaIds)
   }
 
   fun flipAllInCurrentCategory() {
     val mangaInCurrentCategory = loadedManga[selectedCategory?.id] ?: return
     val currentSelected = selectedManga.toList()
     val (toRemove, toAdd) = mangaInCurrentCategory.map { it.id }.partition { it in currentSelected }
-    selectedManga.removeAll(toRemove)
-    selectedManga.addAll(toAdd)
-  }
-
-  fun openSearch() {
-    searchMode = true
-    searchQuery = ""
-  }
-
-  fun closeSearch() {
-    searchMode = false
-    searchQuery = ""
-  }
-
-  fun updateQuery(query: String) {
-    searchQuery = query
+    state.selectedManga.removeAll(toRemove)
+    state.selectedManga.addAll(toAdd)
   }
 
   fun updateLibrary() {

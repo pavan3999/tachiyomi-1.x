@@ -8,88 +8,44 @@
 
 package tachiyomi.ui.history
 
-import androidx.compose.foundation.clickable
-import androidx.compose.foundation.layout.aspectRatio
-import androidx.compose.foundation.layout.fillMaxHeight
-import androidx.compose.foundation.layout.fillMaxWidth
-import androidx.compose.foundation.layout.height
-import androidx.compose.foundation.layout.padding
-import androidx.compose.material.Icon
-import androidx.compose.material.IconButton
-import androidx.compose.material.MaterialTheme
+import androidx.compose.animation.Crossfade
 import androidx.compose.material.Scaffold
-import androidx.compose.material.Text
-import androidx.compose.material.icons.Icons
-import androidx.compose.material.icons.filled.PlayArrow
-import androidx.compose.material.icons.outlined.Delete
 import androidx.compose.runtime.Composable
-import androidx.compose.ui.Modifier
-import androidx.compose.ui.draw.clip
-import androidx.compose.ui.res.stringResource
-import androidx.compose.ui.text.font.FontWeight
-import androidx.compose.ui.unit.dp
 import androidx.navigation.NavController
-import tachiyomi.domain.manga.model.Manga
 import tachiyomi.ui.R
-import tachiyomi.ui.core.coil.rememberMangaCover
-import tachiyomi.ui.core.components.MangaListItem
-import tachiyomi.ui.core.components.MangaListItemColumn
-import tachiyomi.ui.core.components.MangaListItemImage
-import tachiyomi.ui.core.components.MangaListItemSubtitle
-import tachiyomi.ui.core.components.MangaListItemTitle
-import tachiyomi.ui.core.components.Toolbar
+import tachiyomi.ui.core.components.EmptyScreen
+import tachiyomi.ui.core.components.LoadingScreen
+import tachiyomi.ui.core.viewmodel.viewModel
+import tachiyomi.ui.history.components.HistoryContent
+import tachiyomi.ui.history.components.HistoryToolbar
+import tachiyomi.ui.main.Route
 
 @Composable
 fun HistoryScreen(navController: NavController) {
+  val vm = viewModel<HistoryViewModel, HistoryState>(
+    initialState = { HistoryState() }
+  )
+
   Scaffold(
     topBar = {
-      Toolbar(title = { Text(stringResource(R.string.history_label)) })
+      HistoryToolbar(
+        state = vm,
+        onClickDeleteAll = { vm.deleteAll() }
+      )
     }
   ) {
+    Crossfade(targetState = Pair(vm.isLoading, vm.isEmpty)) { (isLoading, isEmpty) ->
+      when {
+        isLoading -> LoadingScreen()
+        isEmpty -> EmptyScreen(R.string.information_no_history)
+        else -> HistoryContent(
+          state = vm,
+          onClickItem = { navController.navigate("${Route.LibraryManga.id}/${it.id}") },
+          onClickDelete = { vm.delete(it) },
+          onClickPlay = { navController.navigate("${Route.Reader.id}/${it.id}") }
+        )
+      }
+    }
   }
 }
 
-@Composable
-fun HistoryItem(
-  manga: Manga,
-  onClickItem: (Manga) -> Unit = { /* TODO Open manga details */ },
-  onClickDelete: (Manga) -> Unit = { /* TODO */ },
-  onClickPlay: (Manga) -> Unit = { /* TODO */ }
-) {
-  MangaListItem(
-    modifier = Modifier
-      .clickable { onClickItem(manga) }
-      .height(80.dp)
-      .fillMaxWidth()
-      .padding(end = 4.dp),
-  ) {
-    MangaListItemImage(
-      modifier = Modifier
-        .fillMaxHeight()
-        .aspectRatio(3f / 4f)
-        .padding(start = 16.dp, top = 8.dp, bottom = 8.dp)
-        .clip(MaterialTheme.shapes.medium),
-      mangaCover = rememberMangaCover(manga)
-    )
-    MangaListItemColumn(
-      modifier = Modifier
-        .weight(1f)
-        .padding(start = 16.dp, end = 8.dp)
-    ) {
-      MangaListItemTitle(
-        text = manga.title,
-        maxLines = 2,
-        fontWeight = FontWeight.SemiBold
-      )
-      MangaListItemSubtitle(
-        text = "Ch. 69 - 10:59" // TODO
-      )
-    }
-    IconButton(onClick = { onClickDelete(manga) }) {
-      Icon(imageVector = Icons.Outlined.Delete, contentDescription = "")
-    }
-    IconButton(onClick = { onClickPlay(manga) }) {
-      Icon(imageVector = Icons.Filled.PlayArrow, contentDescription = "")
-    }
-  }
-}

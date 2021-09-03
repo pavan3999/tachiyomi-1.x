@@ -8,7 +8,7 @@
 
 package tachiyomi.core
 
-import tachiyomi.core.http.DuktapeJSFactory
+import tachiyomi.core.http.QuickJSFactory
 import tachiyomi.core.http.Http
 import tachiyomi.core.http.HttpProvider
 import tachiyomi.core.http.JSFactory
@@ -21,6 +21,6 @@ val CoreModule = module {
 
   bind<AppState>().toClass<AndroidAppState>().singleton()
   bind<Http>().toProvider(HttpProvider::class).providesSingleton()
-  bind<JSFactory>().toClass<DuktapeJSFactory>().singleton()
+  bind<JSFactory>().toClass<QuickJSFactory>().singleton()
 
 }

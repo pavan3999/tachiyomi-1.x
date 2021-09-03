@@ -18,8 +18,7 @@ import javax.inject.Inject
 
 class GetCatalogsByType @Inject internal constructor(
   private val localCatalogs: GetLocalCatalogs,
-  private val remoteCatalogs: GetRemoteCatalogs,
-  private val updatableCatalogs: GetUpdatableCatalogs
+  private val remoteCatalogs: GetRemoteCatalogs
 ) {
 
   suspend fun subscribe(
@@ -30,8 +29,9 @@ class GetCatalogsByType @Inject internal constructor(
     val localFlow = localCatalogs.subscribe(sort)
     val remoteFlow = remoteCatalogs.subscribe(withNsfw = withNsfw)
     return localFlow.combine(remoteFlow) { local, remote ->
-      val updatable = updatableCatalogs.get()
-      val upToDate = local.filter { it !in updatable }
+      val (pinned, unpinned) = local
+        .sortedByDescending { it.hasUpdate }
+        .partition { it.isPinned }
 
       if (excludeRemoteInstalled) {
         val installedPkgs = local
@@ -40,16 +40,16 @@ class GetCatalogsByType @Inject internal constructor(
           .map { it.pkgName }
           .toSet()
 
-        Catalogs(upToDate, updatable, remote.filter { it.pkgName !in installedPkgs })
+        Catalogs(pinned, unpinned, remote.filter { it.pkgName !in installedPkgs })
       } else {
-        Catalogs(upToDate, updatable, remote)
+        Catalogs(pinned, unpinned, remote)
       }
     }
   }
 
   data class Catalogs(
-    val upToDate: List<CatalogLocal>,
-    val updatable: List<CatalogInstalled>,
+    val pinned: List<CatalogLocal>,
+    val unpinned: List<CatalogLocal>,
     val remote: List<CatalogRemote>
   )
 

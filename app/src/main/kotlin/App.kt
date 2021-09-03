@@ -10,6 +10,7 @@ package tachiyomi.app
 
 import android.app.Application
 import tachiyomi.app.initializers.AppInitializers
+import tachiyomi.app.modules.SystemModule
 import tachiyomi.core.CoreModule
 import tachiyomi.data.DataModule
 import tachiyomi.ui.core.di.UiModule
@@ -34,15 +35,18 @@ class App : Application() {
       System.setProperty("kotlinx.coroutines.debug", "on")
     }
 
-    Toothpick.setConfiguration(if (BuildConfig.DEBUG) {
-      Configuration.forDevelopment()
-    } else {
-      Configuration.forProduction()
-    })
+    Toothpick.setConfiguration(
+      if (BuildConfig.DEBUG) {
+        Configuration.forDevelopment()
+      } else {
+        Configuration.forProduction()
+      }
+    )
 
     Toothpick.openRootScope()
       .installModules(
         SmoothieApplicationModule(this),
+        SystemModule(this),
         CoreModule,
         DataModule(this),
         UiModule

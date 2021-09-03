@@ -8,7 +8,6 @@
 
 package tachiyomi.ui.main
 
-import android.content.Intent
 import android.os.Bundle
 import androidx.activity.compose.setContent
 import androidx.core.view.WindowCompat
@@ -24,6 +23,7 @@ class MainActivity : BaseActivity() {
 
   override fun onCreate(savedInstanceState: Bundle?) {
     super.onCreate(savedInstanceState)
+
     val startRoute = uiPrefs.startScreen().get().toRoute()
 
     WindowCompat.setDecorFitsSystemWindows(window, false)
@@ -34,28 +34,6 @@ class MainActivity : BaseActivity() {
         ConfirmExitBackHandler(uiPrefs)
       }
     }
-  }
-
-  override fun onNewIntent(intent: Intent) {
-    if (!handleIntentAction(intent)) {
-      super.onNewIntent(intent)
-    }
-  }
-
-  private fun handleIntentAction(intent: Intent): Boolean {
-    when (intent.action) {
-      SHORTCUT_DEEPLINK_CHAPTER -> {
-      }
-      SHORTCUT_DEEPLINK_MANGA -> {
-      }
-      else -> return false
-    }
-    return true
-  }
-
-  companion object {
-    const val SHORTCUT_DEEPLINK_MANGA = "tachiyomi.action.DEEPLINK_MANGA"
-    const val SHORTCUT_DEEPLINK_CHAPTER = "tachiyomi.action.DEEPLINK_CHAPTER"
   }
 }
 

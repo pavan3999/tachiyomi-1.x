@@ -7,10 +7,10 @@ plugins {
 
 dependencies {
   api(Deps.kotlin.stdlib)
+  api(Deps.kotlin.coroutines.core)
   api(Deps.kotlin.serialization.json)
   api(Deps.okhttp)
   api(Deps.jsoup)
-  api(Deps.coroutines.core)
 
   implementation(Deps.tinylog.api)
   implementation(Deps.tinylog.impl)

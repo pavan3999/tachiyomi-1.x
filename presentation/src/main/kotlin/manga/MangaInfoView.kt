@@ -15,6 +15,7 @@ import androidx.compose.animation.core.animateFloatAsState
 import androidx.compose.animation.core.tween
 import androidx.compose.foundation.BorderStroke
 import androidx.compose.foundation.Image
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Arrangement
 import androidx.compose.foundation.layout.Box
 import androidx.compose.foundation.layout.Column
@@ -23,6 +24,7 @@ import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.Row
 import androidx.compose.foundation.layout.aspectRatio
 import androidx.compose.foundation.layout.fillMaxSize
+import androidx.compose.foundation.layout.fillMaxWidth
 import androidx.compose.foundation.layout.height
 import androidx.compose.foundation.layout.padding
 import androidx.compose.foundation.lazy.LazyRow
@@ -51,14 +53,17 @@ import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.draw.alpha
 import androidx.compose.ui.draw.clip
+import androidx.compose.ui.graphics.Brush
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.layout.ContentScale
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.unit.dp
 import androidx.navigation.NavHostController
-import com.google.accompanist.coil.rememberCoilPainter
+import coil.compose.rememberImagePainter
 import com.google.accompanist.flowlayout.FlowRow
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.source.Source
+import tachiyomi.ui.R
 import tachiyomi.ui.core.coil.rememberMangaCover
 import tachiyomi.ui.core.components.BackIconButton
 import tachiyomi.ui.core.components.Toolbar
@@ -84,9 +89,9 @@ fun MangaInfoHeader(
     )
 
     Image(
-      painter = rememberCoilPainter(
-        request = cover,
-        requestBuilder = {
+      painter = rememberImagePainter(
+        data = cover,
+        builder = {
           listener(onSuccess = { _, _ ->
             imageLoaded = true
           })
@@ -97,6 +102,21 @@ fun MangaInfoHeader(
         .fillMaxSize()
         .alpha(fadeInImage),
       contentScale = ContentScale.Crop,
+    )
+
+    Box(
+      Modifier
+        .fillMaxWidth()
+        .height(100.dp)
+        .background(
+          Brush.verticalGradient(
+            listOf(
+              Color.Transparent,
+              MaterialTheme.colors.background,
+            )
+          )
+        )
+        .align(Alignment.BottomCenter)
     )
 
     Column {
@@ -111,7 +131,7 @@ fun MangaInfoHeader(
       // Cover + main info
       Row(modifier = Modifier.padding(top = 16.dp)) {
         Image(
-          painter = rememberCoilPainter(cover),
+          painter = rememberImagePainter(cover),
           contentDescription = null,
           modifier = Modifier
             .padding(16.dp)
@@ -181,7 +201,7 @@ fun MangaInfoHeader(
     ) {
       Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Icon(imageVector = Icons.Default.Sync, contentDescription = null)
-        Text("Tracking")
+        Text(stringResource(R.string.tracking_label))
       }
     }
     TextButton(
@@ -191,7 +211,7 @@ fun MangaInfoHeader(
     ) {
       Column(horizontalAlignment = Alignment.CenterHorizontally) {
         Icon(imageVector = Icons.Default.Public, contentDescription = null)
-        Text("WebView")
+        Text(stringResource(R.string.webview_label))
       }
     }
   }
@@ -224,7 +244,7 @@ private fun CollapsedSummary(
         maxLines = 2
       )
       TextButton(onClick = onToggleClick) {
-        Text("More")
+        Text(stringResource(R.string.action_more))
       }
     }
     LazyRow(
@@ -255,7 +275,7 @@ private fun ExpandedSummary(
       onClick = onToggleClick,
       modifier = Modifier.align(Alignment.End)
     ) {
-      Text("Less")
+      Text(stringResource(R.string.action_less))
     }
     FlowRow(
       modifier = Modifier.padding(horizontal = 16.dp, vertical = 4.dp),

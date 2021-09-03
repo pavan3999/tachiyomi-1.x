@@ -8,13 +8,17 @@
 
 package tachiyomi.domain.catalog.service
 
+import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.Dispatchers
-import kotlinx.coroutines.GlobalScope
+import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.Flow
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.launchIn
 import kotlinx.coroutines.flow.onEach
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
+import tachiyomi.core.util.replace
+import tachiyomi.domain.catalog.model.CatalogBundled
 import tachiyomi.domain.catalog.model.CatalogInstalled
 import tachiyomi.domain.catalog.model.CatalogLocal
 import tachiyomi.domain.catalog.model.CatalogRemote
@@ -24,14 +28,20 @@ import javax.inject.Singleton
 @Singleton
 class CatalogStore @Inject constructor(
   private val loader: CatalogLoader,
+  catalogPreferences: CatalogPreferences,
   catalogRemoteRepository: CatalogRemoteRepository,
   installationChanges: CatalogInstallationChanges
 ) {
 
+  private val scope = CoroutineScope(SupervisorJob() + Dispatchers.Main)
+
   var catalogs = emptyList<CatalogLocal>()
     private set(value) {
       field = value
-      updatableCatalogs = field.filterUpdatable()
+      updatableCatalogs = field.asSequence()
+        .filterIsInstance<CatalogInstalled>()
+        .filter { it.hasUpdate }
+        .toList()
       catalogsBySource = field.associateBy { it.sourceId }
       catalogsFlow.value = field
     }
@@ -45,8 +55,18 @@ class CatalogStore @Inject constructor(
 
   private val catalogsFlow = MutableStateFlow(catalogs)
 
+  private val pinnedCatalogsPreference = catalogPreferences.pinnedCatalogs()
+
   init {
-    catalogs = loader.loadAll()
+    val loadedCatalogs = loader.loadAll()
+    val pinnedCatalogIds = pinnedCatalogsPreference.get()
+    catalogs = loadedCatalogs.map { catalog ->
+      if (catalog.sourceId.toString() in pinnedCatalogIds) {
+        catalog.copy(isPinned = true)
+      } else {
+        catalog
+      }
+    }
 
     installationChanges.flow
       .onEach { change ->
@@ -57,16 +77,24 @@ class CatalogStore @Inject constructor(
           is CatalogInstallationChange.LocalUninstall -> onUninstalled(change.pkgName, true)
         }
       }
-      .launchIn(GlobalScope)
+      .launchIn(scope)
 
     catalogRemoteRepository.getRemoteCatalogsFlow()
       .onEach {
         remoteCatalogs = it
         synchronized(this@CatalogStore) {
-          catalogs = catalogs // Force an update check
+          catalogs = catalogs.map { catalog ->
+            if (catalog is CatalogInstalled) {
+              val hasUpdate = catalog.checkHasUpdate()
+              if (catalog.hasUpdate != hasUpdate) {
+                return@map catalog.copy(hasUpdate = hasUpdate)
+              }
+            }
+            catalog
+          }
         }
       }
-      .launchIn(GlobalScope)
+      .launchIn(scope)
   }
 
   fun get(sourceId: Long): CatalogLocal? {
@@ -77,25 +105,27 @@ class CatalogStore @Inject constructor(
     return catalogsFlow
   }
 
-  private fun List<CatalogLocal>.filterUpdatable(): List<CatalogInstalled> {
-    val catalogs = mutableListOf<CatalogInstalled>()
-    val remoteCatalogs = remoteCatalogs
-    for (installedCatalog in this) {
-      if (installedCatalog !is CatalogInstalled) continue
+  suspend fun togglePinnedCatalog(sourceId: Long) {
+    withContext(Dispatchers.Default) {
+      synchronized(this@CatalogStore) {
+        val position = catalogs.indexOfFirst { it.sourceId == sourceId }.takeIf { it >= 0 }
+          ?: return@withContext
 
-      val pkgName = installedCatalog.pkgName
-      val remoteCatalog = remoteCatalogs.find { it.pkgName == pkgName } ?: continue
-
-      val hasUpdate = remoteCatalog.versionCode > installedCatalog.versionCode
-      if (hasUpdate) {
-        catalogs.add(installedCatalog)
+        val catalog = catalogs[position]
+        val pinnedCatalogs = pinnedCatalogsPreference.get()
+        val key = catalog.sourceId.toString()
+        if (catalog.isPinned) {
+          pinnedCatalogsPreference.set(pinnedCatalogs - key)
+        } else {
+          pinnedCatalogsPreference.set(pinnedCatalogs + key)
+        }
+        catalogs = catalogs.replace(position, catalog.copy(isPinned = !catalog.isPinned))
       }
     }
-    return catalogs
   }
 
   private fun onInstalled(pkgName: String, isLocalInstall: Boolean) {
-    GlobalScope.launch(Dispatchers.Default) {
+    scope.launch(Dispatchers.Default) {
       synchronized(this@CatalogStore) {
         val previousCatalog = catalogs.find { (it as? CatalogInstalled)?.pkgName == pkgName }
 
@@ -108,6 +138,14 @@ class CatalogStore @Inject constructor(
           loader.loadLocalCatalog(pkgName)
         } else {
           loader.loadSystemCatalog(pkgName)
+        }?.let { catalog ->
+          val isPinned = catalog.sourceId.toString() in pinnedCatalogsPreference.get()
+          val hasUpdate = catalog.checkHasUpdate()
+          if (isPinned || hasUpdate) {
+            catalog.copy(isPinned = isPinned, hasUpdate = hasUpdate)
+          } else {
+            catalog
+          }
         } ?: return@launch
 
         val newInstalledCatalogs = catalogs.toMutableList()
@@ -121,7 +159,7 @@ class CatalogStore @Inject constructor(
   }
 
   private fun onUninstalled(pkgName: String, isLocalInstall: Boolean) {
-    GlobalScope.launch(Dispatchers.Default) {
+    scope.launch(Dispatchers.Default) {
       synchronized(this@CatalogStore) {
         val installedCatalog = catalogs.find { (it as? CatalogInstalled)?.pkgName == pkgName }
         if (installedCatalog != null &&
@@ -130,6 +168,22 @@ class CatalogStore @Inject constructor(
           catalogs = catalogs - installedCatalog
         }
       }
+    }
+  }
+
+  private fun CatalogInstalled.checkHasUpdate(): Boolean {
+    val remoteCatalog = remoteCatalogs.find { it.pkgName == pkgName } ?: return false
+    return remoteCatalog.versionCode > versionCode
+  }
+
+  private fun CatalogLocal.copy(
+    isPinned: Boolean = this.isPinned,
+    hasUpdate: Boolean = this.hasUpdate
+  ): CatalogLocal {
+    return when (this) {
+      is CatalogBundled -> copy(isPinned = isPinned)
+      is CatalogInstalled.Locally -> copy(isPinned = isPinned, hasUpdate = hasUpdate)
+      is CatalogInstalled.SystemWide -> copy(isPinned = isPinned, hasUpdate = hasUpdate)
     }
   }
 

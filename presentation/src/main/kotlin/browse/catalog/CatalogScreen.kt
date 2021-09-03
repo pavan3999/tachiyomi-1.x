@@ -40,7 +40,7 @@ import androidx.compose.ui.text.TextStyle
 import androidx.compose.ui.unit.dp
 import androidx.compose.ui.unit.sp
 import androidx.navigation.NavHostController
-import com.google.accompanist.coil.rememberCoilPainter
+import coil.compose.rememberImagePainter
 import tachiyomi.domain.manga.model.Manga
 import tachiyomi.ui.core.coil.MangaCover
 import tachiyomi.ui.core.coil.rememberMangaCover
@@ -141,7 +141,7 @@ fun MangaGridItem(
   ) {
     Box(modifier = Modifier.fillMaxSize()) {
       Image(
-        painter = rememberCoilPainter(cover),
+        painter = rememberImagePainter(cover),
         contentDescription = null,
         modifier = Modifier.fillMaxSize(),
         contentScale = ContentScale.Crop

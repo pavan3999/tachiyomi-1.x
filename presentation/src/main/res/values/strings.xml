@@ -7,22 +7,73 @@
   <string name="browse_label">Browse</string>
   <string name="more_label">More</string>
 
+  <!-- Common actions -->
+  <string name="action_add">Add</string>
+  <string name="action_select">Select</string>
+  <string name="action_edit">Edit</string>
+  <string name="action_cancel">Cancel</string>
+  <string name="action_delete">Delete</string>
+  <string name="action_yes">Yes</string>
+  <string name="action_no">No</string>
+
   <string name="lang_all">All</string>
   <string name="lang_others">Others</string>
 
+  <!-- Library -->
   <string name="all_category">All</string>
   <string name="uncategorized_category">Uncategorized</string>
+
+  <!-- Library sheet -->
+  <string name="columns_num_label">Columns: %s</string>
+  <string name="columns_auto">Auto</string>
+  <string name="badges_label">Badges</string>
+  <string name="unread_label">Unread</string>
+  <string name="downloaded_label">Downloaded</string>
+  <string name="display_category_tabs">Show category tabs</string>
+  <string name="display_all_category">Show \"All\" category</string>
+  <string name="display_category_numbers">Show number of items</string>
+
+  <!-- Manga info screen -->
+  <string name="webview_label">WebView</string>
+  <string name="action_more">More</string>
+  <string name="action_less">Less</string>
+  <plurals name="chapters_num">
+    <item quantity="one">%d chapter</item>
+    <item quantity="other">%d chapters</item>
+  </plurals>
+  <string name="page_progress_num">Page %d</string>
+
+  <!-- Updates screen -->
+  <string name="updates_subtitle">Ch. %1$.1f - %2$s</string>
+
+  <!-- History screen -->
+  <string name="clear_history">Clear history</string>
+
+  <!-- Browse catalogs screen -->
+  <string name="catalog_details">Details</string>
+  <string name="catalog_pin">Pin</string>
+  <string name="catalog_unpin">Unpin</string>
+  <string name="catalog_uninstall">Uninstall</string>
 
   <!-- More screen -->
   <string name="downloaded_only">Downloaded only</string>
   <string name="downloaded_only_subtitle">Filters all manga in your library</string>
   <string name="incognito_mode">Incognito mode</string>
   <string name="incognito_mode_subtitle">Pauses reading history</string>
-  <string name="download_queue">Download queue</string>
-  <string name="categories">Categories</string>
+  <string name="download_queue_label">Download queue</string>
   <string name="settings_label">Settings</string>
-  <string name="about_label">About</string>
   <string name="help_label">Help</string>
+
+  <!-- Categories screen -->
+  <string name="categories_label">Categories</string>
+  <string name="create_category">Create category</string>
+  <string name="rename_category">Rename category</string>
+  <string name="delete_category">Delete category</string>
+  <string name="delete_category_confirmation">Do you wish to delete the category %s?</string>
+
+  <!-- About screen -->
+  <string name="about_label">About</string>
+  <string name="licenses_label">Open source licenses</string>
 
   <!-- Settings screen -->
   <string name="general_label">General</string>
@@ -50,5 +101,13 @@
   <string name="follow_system_settings">Follow system settings</string>
   <string name="light">Light</string>
   <string name="dark">Dark</string>
+  <string name="color_picker_presets">Presets</string>
+  <string name="color_picker_custom">Custom</string>
+
+  <!-- Information Text -->
+  <string name="information_no_updates">No recent updates</string>
+  <string name="information_no_history">Nothing read recently</string>
+  <string name="information_no_categories">You have no categories. Tap the plus button to
+    create one for organizing your library.</string>
 
 </resources>

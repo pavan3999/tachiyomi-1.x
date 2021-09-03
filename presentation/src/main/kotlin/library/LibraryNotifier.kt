@@ -8,11 +8,12 @@
 
 package tachiyomi.ui.library
 
+import android.annotation.SuppressLint
 import android.app.Application
-import android.app.NotificationManager
 import android.content.Intent
 import android.os.IBinder
 import androidx.core.app.NotificationCompat
+import androidx.core.app.NotificationManagerCompat
 import androidx.core.content.ContextCompat
 import kotlinx.coroutines.CompletableDeferred
 import kotlinx.coroutines.GlobalScope
@@ -29,7 +30,7 @@ import javax.inject.Singleton
 class LibraryNotifier @Inject constructor(
   private val application: Application,
   private val updater: LibraryUpdater,
-  private val notifManager: NotificationManager
+  private val notifManager: NotificationManagerCompat
 ) {
 
   private val initialized = AtomicBoolean()
@@ -80,6 +81,7 @@ class LibraryNotifier @Inject constructor(
   }
 
   private companion object {
+    @SuppressLint("StaticFieldLeak") // This is the activity context
     var lastNotification: NotificationCompat.Builder? = null
     var serviceStartedDeferred: CompletableDeferred<Unit>? = null
   }

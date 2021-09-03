@@ -23,5 +23,6 @@ import javax.inject.Inject
 class AppInitializers @Inject constructor(
   logInitializer: LogInitializer,
   catalogStoreInitializer: CatalogStoreInitializer,
-  channelsInitializer: NotificationsInitializer
+  channelsInitializer: NotificationsInitializer,
+  emojiCompatInitializer: EmojiCompatInitializer
 )

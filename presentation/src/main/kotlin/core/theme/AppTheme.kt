@@ -11,6 +11,8 @@ package tachiyomi.ui.core.theme
 import androidx.compose.foundation.isSystemInDarkTheme
 import androidx.compose.material.Colors
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.ripple.LocalRippleTheme
+import androidx.compose.material.ripple.RippleTheme
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.runtime.LaunchedEffect
@@ -19,7 +21,7 @@ import androidx.compose.runtime.remember
 import androidx.compose.ui.graphics.Color
 import androidx.compose.ui.graphics.luminance
 import androidx.compose.ui.graphics.takeOrElse
-import com.google.accompanist.coil.LocalImageLoader
+import coil.compose.LocalImageLoader
 import com.google.accompanist.insets.ProvideWindowInsets
 import com.google.accompanist.systemuicontroller.rememberSystemUiController
 import kotlinx.coroutines.CoroutineScope
@@ -41,6 +43,7 @@ import javax.inject.Inject
 fun AppTheme(content: @Composable () -> Unit) {
   val vm = viewModel<AppThemeViewModel>()
   val (colors, customColors) = vm.getColors()
+  val rippleTheme = vm.getRippleTheme()
   val systemUiController = rememberSystemUiController()
   val transparentStatusBar = LocalTransparentStatusBar.current.enabled
 
@@ -49,12 +52,16 @@ fun AppTheme(content: @Composable () -> Unit) {
     systemUiController.setStatusBarColor(Color.Transparent, darkIcons)
   }
 
-  CompositionLocalProvider(
-    LocalCustomColors provides customColors,
-    LocalImageLoader provides vm.coilLoader
+  MaterialTheme(
+    colors = colors
   ) {
     ProvideWindowInsets {
-      MaterialTheme(colors = colors, content = content)
+      CompositionLocalProvider(
+        LocalRippleTheme provides rippleTheme,
+        LocalCustomColors provides customColors,
+        LocalImageLoader provides vm.coilLoader,
+        content = content
+      )
     }
   }
 }
@@ -71,6 +78,15 @@ private class AppThemeViewModel @Inject constructor(
   private val baseThemeScope = CoroutineScope(baseThemeJob)
 
   val coilLoader = coilLoaderFactory.create()
+
+  @Composable
+  fun getRippleTheme(): RippleTheme {
+    return when (themeMode) {
+      ThemeMode.System -> AppRippleTheme(!isSystemInDarkTheme())
+      ThemeMode.Light -> AppRippleTheme(true)
+      ThemeMode.Dark -> AppRippleTheme(false)
+    }
+  }
 
   @Composable
   fun getColors(): Pair<Colors, CustomColors> {

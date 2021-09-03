@@ -20,11 +20,11 @@ import androidx.compose.material.Surface
 import androidx.compose.material.Text
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.filled.CloudOff
-import androidx.compose.material.icons.filled.GetApp
-import androidx.compose.material.icons.filled.Help
-import androidx.compose.material.icons.filled.Info
-import androidx.compose.material.icons.filled.Label
-import androidx.compose.material.icons.filled.Settings
+import androidx.compose.material.icons.outlined.GetApp
+import androidx.compose.material.icons.outlined.HelpOutline
+import androidx.compose.material.icons.outlined.Info
+import androidx.compose.material.icons.outlined.Label
+import androidx.compose.material.icons.outlined.Settings
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.CompositionLocalProvider
 import androidx.compose.ui.Modifier
@@ -90,7 +90,7 @@ fun MoreScreen(navController: NavController) {
           preference = vm.downloadedOnly,
           title = R.string.downloaded_only,
           subtitle = R.string.downloaded_only_subtitle,
-          icon = Icons.Default.CloudOff
+          icon = Icons.Default.CloudOff,
         )
       }
       item {
@@ -98,7 +98,7 @@ fun MoreScreen(navController: NavController) {
           preference = vm.incognitoMode,
           title = R.string.incognito_mode,
           subtitle = R.string.incognito_mode_subtitle,
-          icon = ImageVector.vectorResource(R.drawable.ic_glasses)
+          icon = ImageVector.vectorResource(R.drawable.ic_glasses),
         )
       }
       item {
@@ -106,16 +106,16 @@ fun MoreScreen(navController: NavController) {
       }
       item {
         PreferenceRow(
-          title = R.string.download_queue,
-          icon = Icons.Default.GetApp,
-          onClick = { navController.navigate(Route.DownloadQueue.id) }
+          title = R.string.download_queue_label,
+          icon = Icons.Outlined.GetApp,
+          onClick = { navController.navigate(Route.DownloadQueue.id) },
         )
       }
       item {
         PreferenceRow(
-          title = R.string.categories,
-          icon = Icons.Default.Label,
-          onClick = { navController.navigate(Route.Categories.id) }
+          title = R.string.categories_label,
+          icon = Icons.Outlined.Label,
+          onClick = { navController.navigate(Route.Categories.id) },
         )
       }
       item {
@@ -124,22 +124,22 @@ fun MoreScreen(navController: NavController) {
       item {
         PreferenceRow(
           title = R.string.settings_label,
-          icon = Icons.Default.Settings,
-          onClick = { navController.navigate(Route.Settings.id) }
+          icon = Icons.Outlined.Settings,
+          onClick = { navController.navigate(Route.Settings.id) },
         )
       }
       item {
         PreferenceRow(
           title = R.string.about_label,
-          icon = Icons.Default.Info,
-          onClick = { navController.navigate(Route.About.id) }
+          icon = Icons.Outlined.Info,
+          onClick = { navController.navigate(Route.About.id) },
         )
       }
       item {
         PreferenceRow(
           title = R.string.help_label,
-          icon = Icons.Default.Help,
-          onClick = { uriHandler.openUri("https://tachiyomi.org/help/") }
+          icon = Icons.Outlined.HelpOutline,
+          onClick = { uriHandler.openUri("https://tachiyomi.org/help/") },
         )
       }
     }

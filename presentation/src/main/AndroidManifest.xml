@@ -5,16 +5,22 @@
     android:theme="@style/Theme.App">
     <activity
       android:name=".main.MainActivity"
-      android:launchMode="singleTask"
       android:windowSoftInputMode="adjustPan"
       android:configChanges="orientation|screenLayout|screenSize"
-      android:theme="@style/Theme.Splash">
+      android:theme="@style/Theme.Splash"
+      android:exported="true">
       <intent-filter>
         <action android:name="android.intent.action.MAIN" />
         <category android:name="android.intent.category.LAUNCHER" />
       </intent-filter>
+
       <intent-filter>
-        <action android:name="android.intent.action.VIEW"/>
+        <action android:name="android.intent.action.VIEW" />
+        <category android:name="android.intent.category.DEFAULT" />
+
+        <data
+          android:host="deeplink"
+          android:scheme="tachiyomi" />
       </intent-filter>
     </activity>
 

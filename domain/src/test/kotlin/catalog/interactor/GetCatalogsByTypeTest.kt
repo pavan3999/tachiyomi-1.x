@@ -10,6 +10,7 @@ package tachiyomi.domain.catalog.interactor
 
 import io.kotest.core.spec.style.StringSpec
 import io.kotest.matchers.collections.shouldHaveSize
+import io.kotest.matchers.shouldBe
 import io.mockk.clearAllMocks
 import io.mockk.coEvery
 import io.mockk.coVerify
@@ -24,8 +25,7 @@ class GetCatalogsByTypeTest : StringSpec({
 
   val localCatalogs = mockk<GetLocalCatalogs>(relaxed = true)
   val remoteCatalogs = mockk<GetRemoteCatalogs>(relaxed = true)
-  val updatableCatalogs = mockk<GetUpdatableCatalogs>(relaxed = true)
-  val interactor = GetCatalogsByType(localCatalogs, remoteCatalogs, updatableCatalogs)
+  val interactor = GetCatalogsByType(localCatalogs, remoteCatalogs)
   afterTest { clearAllMocks() }
 
   "subscribes to catalogs" {
@@ -35,47 +35,102 @@ class GetCatalogsByTypeTest : StringSpec({
     coVerify { remoteCatalogs.subscribe(any()) }
   }
   "returns all catalogs" {
-    coEvery { localCatalogs.subscribe(any()) } returns flowOf(listOf(
-      mockCatalogInstalled("a"),
-      mockCatalogInstalled("b")
-    ))
-    coEvery { remoteCatalogs.subscribe() } returns flowOf(listOf(
-      mockCatalogRemote("a"),
-      mockCatalogRemote("c")
-    ))
+    coEvery { localCatalogs.subscribe(any()) } returns flowOf(
+      listOf(
+        mockCatalogInstalled("a"),
+        mockCatalogInstalled("b")
+      )
+    )
+    coEvery { remoteCatalogs.subscribe() } returns flowOf(
+      listOf(
+        mockCatalogRemote("a"),
+        mockCatalogRemote("c")
+      )
+    )
 
-    val (upToDate, _, remote) = interactor.subscribe(excludeRemoteInstalled = false).first()
-    upToDate shouldHaveSize 2
+    val (_, unpinned, remote) = interactor.subscribe(excludeRemoteInstalled = false).first()
+    unpinned shouldHaveSize 2
     remote shouldHaveSize 2
   }
   "filters remote installed" {
-    coEvery { localCatalogs.subscribe(any()) } returns flowOf(listOf(
-      mockCatalogInstalled("a"),
-      mockCatalogInstalled("b")
-    ))
-    coEvery { remoteCatalogs.subscribe() } returns flowOf(listOf(
-      mockCatalogRemote("a"),
-      mockCatalogRemote("c")
-    ))
+    coEvery { localCatalogs.subscribe(any()) } returns flowOf(
+      listOf(
+        mockCatalogInstalled("a"),
+        mockCatalogInstalled("b")
+      )
+    )
+    coEvery { remoteCatalogs.subscribe() } returns flowOf(
+      listOf(
+        mockCatalogRemote("a"),
+        mockCatalogRemote("c")
+      )
+    )
 
-    val (upToDate, _, remote) = interactor.subscribe(excludeRemoteInstalled = true).first()
-    upToDate shouldHaveSize 2
+    val (_, unpinned, remote) = interactor.subscribe(excludeRemoteInstalled = true).first()
+    unpinned shouldHaveSize 2
     remote shouldHaveSize 1
   }
-  "filters up to date catalogs when present in updatable" {
-    val sameCatalogMock = mockCatalogInstalled("a")
-    coEvery { localCatalogs.subscribe(any()) } returns flowOf(listOf(
-      sameCatalogMock,
-      mockCatalogInstalled("b")
-    ))
-    coEvery { updatableCatalogs.get() } returns listOf(
-      sameCatalogMock
+  "splits pinned and unpinned catalogs" {
+    coEvery { localCatalogs.subscribe(any()) } returns flowOf(
+      listOf(
+        mockCatalogInstalled("a"),
+        mockk<CatalogInstalled> {
+          every { isPinned } returns true
+          every { hasUpdate } returns false
+        }
+      )
     )
     coEvery { remoteCatalogs.subscribe() } returns flowOf(emptyList())
 
-    val (upToDate, updatable, _) = interactor.subscribe().first()
-    upToDate shouldHaveSize 1
-    updatable shouldHaveSize 1
+    val (pinned, unpinned, _) = interactor.subscribe().first()
+    pinned shouldHaveSize 1
+    unpinned shouldHaveSize 1
+  }
+  "sorts catalogs by hasUpdate field first" {
+    coEvery { localCatalogs.subscribe(any()) } returns flowOf(
+      listOf(
+        mockk<CatalogInstalled> {
+          every { name } returns "C"
+          every { isPinned } returns false
+          every { hasUpdate } returns false
+        },
+        mockk<CatalogInstalled> {
+          every { name } returns "B"
+          every { isPinned } returns false
+          every { hasUpdate } returns true
+        },
+        mockk<CatalogInstalled> {
+          every { name } returns "A"
+          every { isPinned } returns false
+          every { hasUpdate } returns false
+        },
+        mockk<CatalogInstalled> {
+          every { name } returns "A"
+          every { isPinned } returns true
+          every { hasUpdate } returns false
+        },
+        mockk<CatalogInstalled> {
+          every { name } returns "B"
+          every { isPinned } returns true
+          every { hasUpdate } returns true
+        },
+        mockk<CatalogInstalled> {
+          every { name } returns "C"
+          every { isPinned } returns true
+          every { hasUpdate } returns false
+        }
+      )
+    )
+    coEvery { remoteCatalogs.subscribe() } returns flowOf(emptyList())
+
+    val (pinned, unpinned, _) = interactor.subscribe().first()
+
+    unpinned[0].name shouldBe "B"
+    unpinned[1].name shouldBe "C"
+    unpinned[2].name shouldBe "A"
+    pinned[0].name shouldBe "B"
+    pinned[1].name shouldBe "A"
+    pinned[2].name shouldBe "C"
   }
 
 })
@@ -83,6 +138,8 @@ class GetCatalogsByTypeTest : StringSpec({
 private fun mockCatalogInstalled(mockPkgName: String): CatalogInstalled {
   return mockk {
     every { pkgName } returns mockPkgName
+    every { isPinned } returns false
+    every { hasUpdate } returns false
   }
 }
 

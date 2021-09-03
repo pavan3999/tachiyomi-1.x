@@ -14,8 +14,8 @@ object MangaConverters {
 
   @JvmStatic
   @TypeConverter
-  fun toDb(genres: List<String>?): String? {
-    return genres?.joinToString(";")
+  fun toDb(genres: List<String>): String {
+    return genres.joinToString(";")
   }
 
   @JvmStatic

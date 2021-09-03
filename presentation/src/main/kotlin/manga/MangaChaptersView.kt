@@ -32,11 +32,14 @@ import androidx.compose.material.icons.filled.FilterList
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Alignment
 import androidx.compose.ui.Modifier
+import androidx.compose.ui.res.stringResource
 import androidx.compose.ui.text.AnnotatedString
 import androidx.compose.ui.text.SpanStyle
 import androidx.compose.ui.text.buildAnnotatedString
 import androidx.compose.ui.unit.dp
 import tachiyomi.domain.manga.model.Chapter
+import tachiyomi.ui.R
+import tachiyomi.ui.core.util.quantityStringResource
 import java.text.SimpleDateFormat
 import java.util.Date
 import java.util.Locale
@@ -54,7 +57,12 @@ fun ChapterHeader(
       .padding(start = 16.dp),
     verticalAlignment = Alignment.CenterVertically
   ) {
-    Text("${chapters.size} chapters", modifier = Modifier.weight(1f))
+    Text(
+      quantityStringResource(R.plurals.chapters_num, chapters.size, chapters.size), modifier =
+      Modifier
+        .weight
+          (1f)
+    )
     IconButton(onClick = { /*TODO*/ }) {
       Icon(Icons.Default.FilterList, null)
     }
@@ -67,7 +75,7 @@ fun ChapterRow(
   isDownloaded: Boolean,
   onClick: () -> Unit,
   onDownloadClick: () -> Unit = {},
-  onDeleteClick: () -> Unit = {}
+  onDeleteClick: () -> Unit = {},
 ) {
   Row(
     modifier = Modifier
@@ -95,7 +103,7 @@ fun ChapterRow(
           if (length > 0) append(" • ")
           append(
             AnnotatedString(
-              "Page " + (chapter.progress + 1).toString(),
+              stringResource(R.string.page_progress_num, chapter.progress + 1),
               SpanStyle(color = LocalContentColor.current.copy(alpha = ContentAlpha.disabled))
             )
           )

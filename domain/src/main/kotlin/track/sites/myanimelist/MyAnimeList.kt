@@ -105,13 +105,13 @@ class MyAnimeList @Inject constructor(
       .drop(1)
       .filter { it.select("td")[2].text() != "Novel" }
       .map { row ->
-        val picElement = row.select("div.picSurround a").first()
+        val picElement = row.select("div.picSurround a").first()!!
         val totalChapters = if (row.select("td")[4].text() == "-") {
           0
         } else {
           row.select("td")[4].text().toInt()
         }
-        val publishingStatus = if (row.select("td").last().text() == "-") {
+        val publishingStatus = if (row.select("td").last()!!.text() == "-") {
           "Publishing"
         } else {
           "Finished"
@@ -122,7 +122,7 @@ class MyAnimeList @Inject constructor(
           title = row.select("strong").text(),
           totalChapters = totalChapters,
           coverUrl = picElement.select("img").attr("data-src"),
-          summary = row.select("div.pt4").first().ownText(),
+          summary = row.select("div.pt4").first()!!.ownText(),
           publishingStatus = publishingStatus,
           publishingType = row.select("td")[2].text(),
           startDate = row.select("td")[6].text()
@@ -135,10 +135,10 @@ class MyAnimeList @Inject constructor(
     val response = client.get(url).awaitSuccess()
     val body = Jsoup.parse(response.awaitBody(), url)
 
-    val lastChapterRead = body.getElementById("add_manga_num_read_chapters").`val`()
-    val totalChapters = body.getElementById("totalChap").text()
-    val score = body.getElementById("add_manga_score").select("option[selected]").`val`()
-    val status = body.getElementById("add_manga_status").select("option[selected]").`val`()
+    val lastChapterRead = body.getElementById("add_manga_num_read_chapters")!!.`val`()
+    val totalChapters = body.getElementById("totalChap")!!.text()
+    val score = body.getElementById("add_manga_score")!!.select("option[selected]").`val`()
+    val status = body.getElementById("add_manga_status")!!.select("option[selected]").`val`()
 
     return TrackState(
       lastChapterRead = lastChapterRead.toFloat(),

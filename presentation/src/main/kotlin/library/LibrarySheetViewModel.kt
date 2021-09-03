@@ -9,7 +9,6 @@
 package tachiyomi.ui.library
 
 import androidx.compose.runtime.getValue
-import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import tachiyomi.domain.library.model.DisplayMode
 import tachiyomi.domain.library.model.LibraryFilter
@@ -24,7 +23,6 @@ import javax.inject.Inject
 class LibrarySheetViewModel @Inject constructor(
   libraryPreferences: LibraryPreferences
 ) : BaseViewModel() {
-  var selectedPage by mutableStateOf(0)
 
   var filters by libraryPreferences.filters(includeAll = true).asState()
     private set
@@ -48,6 +46,12 @@ class LibrarySheetViewModel @Inject constructor(
     private set
 
   var showCountInCategory by libraryPreferences.showCountInCategory().asState()
+    private set
+
+  var columnsInPortrait by libraryPreferences.columnsInPortrait().asState()
+    private set
+
+  var columnsInLandscape by libraryPreferences.columnsInLandscape().asState()
     private set
 
   fun toggleFilter(type: LibraryFilter.Type) {
@@ -100,5 +104,17 @@ class LibrarySheetViewModel @Inject constructor(
 
   fun toggleShowCountInCategory() {
     showCountInCategory = !showCountInCategory
+  }
+
+  fun changeColumnsInPortrait(columns: Int) {
+    if (columnsInPortrait != columns) {
+      columnsInPortrait = columns.coerceAtLeast(0)
+    }
+  }
+
+  fun changeColumnsInLandscape(columns: Int) {
+    if (columnsInLandscape != columns) {
+      columnsInLandscape = columns.coerceAtLeast(0)
+    }
   }
 }

@@ -9,8 +9,12 @@
 package tachiyomi.ui.main
 
 sealed class Route(val id: String) {
+  object DeepLink : Route("deeplink")
+
   object Library : Route("library")
   object LibraryManga : Route("library/manga")
+
+  object Reader : Route("reader")
 
   object Updates : Route("updates")
 
@@ -20,10 +24,14 @@ sealed class Route(val id: String) {
   object BrowseCatalog : Route("browse/catalog")
   object BrowseCatalogManga : Route("browse/catalog/manga")
 
+  object WebView : Route("webview")
+
   object More : Route("more")
   object Categories : Route("categories")
   object DownloadQueue : Route("download_queue")
+
   object About : Route("about")
+  object Licenses : Route("licenses")
 
   object Settings : Route("settings")
   object SettingsGeneral : Route("settings/general")

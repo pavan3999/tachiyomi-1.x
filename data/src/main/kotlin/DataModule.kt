@@ -19,6 +19,7 @@ import tachiyomi.data.catalog.service.AndroidCatalogInstaller
 import tachiyomi.data.catalog.service.AndroidCatalogLoader
 import tachiyomi.data.catalog.service.CatalogRemoteRepositoryImpl
 import tachiyomi.data.download.service.DownloadRepositoryImpl
+import tachiyomi.data.history.service.HistoryRepositoryImpl
 import tachiyomi.data.library.service.CategoryRepositoryImpl
 import tachiyomi.data.library.service.LibraryRepositoryImpl
 import tachiyomi.data.library.service.LibraryUpdateSchedulerImpl
@@ -26,6 +27,7 @@ import tachiyomi.data.library.service.MangaCategoryRepositoryImpl
 import tachiyomi.data.manga.service.ChapterRepositoryImpl
 import tachiyomi.data.manga.service.MangaRepositoryImpl
 import tachiyomi.data.sync.api.SyncDeviceAndroid
+import tachiyomi.data.updates.service.UpdatesRepositoryImpl
 import tachiyomi.domain.catalog.service.CatalogInstallationChanges
 import tachiyomi.domain.catalog.service.CatalogInstaller
 import tachiyomi.domain.catalog.service.CatalogLoader
@@ -35,6 +37,7 @@ import tachiyomi.domain.catalog.service.CatalogRemoteRepository
 import tachiyomi.domain.catalog.service.CatalogStore
 import tachiyomi.domain.download.service.DownloadPreferences
 import tachiyomi.domain.download.service.DownloadRepository
+import tachiyomi.domain.history.service.HistoryRepository
 import tachiyomi.domain.library.service.CategoryRepository
 import tachiyomi.domain.library.service.LibraryCovers
 import tachiyomi.domain.library.service.LibraryPreferences
@@ -46,6 +49,7 @@ import tachiyomi.domain.manga.service.MangaRepository
 import tachiyomi.domain.sync.api.SyncDevice
 import tachiyomi.domain.sync.service.SyncPreferences
 import tachiyomi.domain.ui.UiPreferences
+import tachiyomi.domain.updates.service.UpdatesRepository
 import toothpick.ktp.binding.bind
 import toothpick.ktp.binding.module
 import java.io.File
@@ -106,6 +110,9 @@ fun DataModule(context: Application) = module {
     .toProviderInstance { UiPreferences(AndroidPreferenceStore(context, "ui")) }
     .providesSingleton()
 
+  bind<UpdatesRepository>().toClass<UpdatesRepositoryImpl>().singleton()
+
+  bind<HistoryRepository>().toClass<HistoryRepositoryImpl>().singleton()
 }
 
 private class RoomTransactions @Inject constructor(private val db: AppDatabase) : Transactions {
