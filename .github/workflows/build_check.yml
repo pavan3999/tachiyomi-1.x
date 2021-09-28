@@ -4,6 +4,15 @@ on:
     branches:
       - dev
   pull_request:
+  # Manual triggers
+  workflow_dispatch:
+    inputs:
+      git-ref:
+        description: Git Ref (Optional)
+        required: false
+      dry-run:
+        description: Creates a draft release
+        required: false
 
 jobs:
   check_wrapper:
@@ -44,10 +53,18 @@ jobs:
       - name: Build and test app
         uses: eskatos/gradle-command-action@v1
         with:
-          arguments: assembleDebug :domain:jvmTest :domain:jacocoTestReport
+          arguments: assembleDebug
           wrapper-cache-enabled: true
           dependencies-cache-enabled: true
           configuration-cache-enabled: true
 
-      - name: Upload test coverage
-        uses: codecov/codecov-action@v1
+      - name: Create Release
+        uses: actions/upload-artifact@v2
+        with:
+          name: Tachiyomi
+          path: app/build/outputs/apk
+
+      - name: Download Artifacts
+        uses: actions/download-artifact@v2
+        with:
+          name: Tachiyomi
