@@ -7,15 +7,15 @@ import androidx.compose.runtime.mutableStateListOf
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.setValue
 import androidx.compose.runtime.snapshots.SnapshotStateList
+import kotlinx.datetime.LocalDate
 import tachiyomi.domain.updates.model.UpdatesManga
-import java.util.Date
 
 @Stable
 interface UpdatesState {
 
   val isLoading: Boolean
   val isEmpty: Boolean
-  val updates: Map<Date, List<UpdatesManga>>
+  val updates: Map<LocalDate, List<UpdatesManga>>
   val selection: List<Long>
   val hasSelection: Boolean
 }
@@ -28,7 +28,7 @@ class UpdatesStateImpl : UpdatesState {
 
   override var isLoading: Boolean by mutableStateOf(true)
   override val isEmpty: Boolean by derivedStateOf { updates.isEmpty() }
-  override var updates: Map<Date, List<UpdatesManga>> by mutableStateOf(emptyMap())
+  override var updates: Map<LocalDate, List<UpdatesManga>> by mutableStateOf(emptyMap())
   override val selection: SnapshotStateList<Long> = mutableStateListOf()
   override val hasSelection: Boolean by derivedStateOf { selection.isNotEmpty() }
 }

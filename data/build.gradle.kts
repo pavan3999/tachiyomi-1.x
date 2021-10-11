@@ -2,6 +2,7 @@ plugins {
   kotlin("multiplatform")
   id("com.android.library")
   id("kotlin-kapt")
+  id("kotlinx-serialization")
   id("com.squareup.sqldelight")
 }
 
@@ -25,7 +26,7 @@ kotlin {
       }
     }
     named("androidMain") {
-      kotlin.srcDir("src/sharedAndroidMain/kotlin")
+      kotlin.srcDir("src/sharedJvmMain/kotlin")
       dependencies {
         implementation(Deps.sqldelight.android)
         implementation(Deps.requerySqlite)
@@ -40,7 +41,7 @@ kotlin {
       getByName(it) {
         dependencies {
           implementation(project(Module.sourceApi))
-          implementation(Deps.toothpick.ktp)
+          implementation(Deps.toothpick.runtime)
         }
         project.dependencies {
           add("kapt", Deps.toothpick.compiler)

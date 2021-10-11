@@ -61,7 +61,7 @@ class HistoryViewModel @Inject constructor(
   }
 }
 
-private fun <T : HistoryWithRelations> List<T>.filteredByQuery(query: String?): List<T> {
+private fun List<HistoryWithRelations>.filteredByQuery(query: String?): List<HistoryWithRelations> {
   return if (query == null) {
     this
   } else {

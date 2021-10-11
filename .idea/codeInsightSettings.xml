@@ -1,0 +1,13 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<project version="4">
+  <component name="JavaProjectCodeInsightSettings">
+    <excluded-names>
+      <name>android.util.Log</name>
+      <name>java.lang.reflect.Modifier</name>
+      <name>java.nio.file.WatchEvent.Modifier</name>
+      <name>java.util.concurrent.Flow</name>
+      <name>org.intellij.lang.annotations.Flow</name>
+      <name>org.w3c.dom.Text</name>
+    </excluded-names>
+  </component>
+</project>

@@ -10,8 +10,9 @@ package tachiyomi.data
 
 import android.app.Application
 import com.squareup.sqldelight.db.SqlDriver
+import okio.FileSystem
+import okio.Path.Companion.toOkioPath
 import tachiyomi.core.db.Transactions
-import tachiyomi.core.di.GenericsProvider
 import tachiyomi.core.prefs.AndroidPreferenceStore
 import tachiyomi.data.catalog.AndroidCatalogInstallationChanges
 import tachiyomi.data.catalog.AndroidCatalogInstaller
@@ -63,6 +64,8 @@ fun DataModule(context: Application) = module {
   bind<DatabaseHandler>().toInstance(dbHandler)
   bind<Transactions>().toClass<DatabaseTransactions>()
 
+  bind<FileSystem>().toInstance(FileSystem.SYSTEM)
+
   bind<MangaRepository>().toClass<MangaRepositoryImpl>().singleton()
 
   bind<ChapterRepository>().toClass<ChapterRepositoryImpl>().singleton()
@@ -76,7 +79,12 @@ fun DataModule(context: Application) = module {
     .providesSingleton()
 
   bind<LibraryCovers>()
-    .toProviderInstance { LibraryCovers(File(context.filesDir, "library_covers")) }
+    .toProviderInstance {
+      LibraryCovers(
+        FileSystem.Companion.SYSTEM,
+        File(context.filesDir, "library_covers").toOkioPath()
+      )
+    }
     .providesSingleton()
   bind<LibraryUpdateScheduler>().toClass<LibraryUpdateSchedulerImpl>().singleton()
 
@@ -90,15 +98,17 @@ fun DataModule(context: Application) = module {
   bind<CatalogStore>().singleton()
   bind<CatalogLoader>().toClass<AndroidCatalogLoader>().singleton()
 
-  bind<AndroidCatalogInstallationChanges>().singleton()
-  bind<CatalogInstallationChanges>()
-    .toProviderInstance(GenericsProvider(AndroidCatalogInstallationChanges::class.java))
+  val catalogInstallationChanges = AndroidCatalogInstallationChanges(context)
+  bind<CatalogInstallationChanges>().toInstance(catalogInstallationChanges)
+  bind<AndroidCatalogInstallationChanges>().toInstance(catalogInstallationChanges)
 
   bind<DownloadRepository>().toClass<DownloadRepositoryImpl>().singleton()
   bind<DownloadPreferences>()
     .toProviderInstance {
       val defaultDownloads = context.getExternalFilesDir("downloads")!!
-      DownloadPreferences(AndroidPreferenceStore(context, "download"), defaultDownloads)
+      DownloadPreferences(
+        AndroidPreferenceStore(context, "download"), defaultDownloads.toOkioPath()
+      )
     }
     .providesSingleton()
 

@@ -20,9 +20,10 @@ import io.mockk.coInvoke
 import io.mockk.coVerify
 import io.mockk.every
 import io.mockk.mockk
-import io.mockk.mockkStatic
+import io.mockk.spyk
+import okio.FileSystem
 import okio.IOException
-import okio.sink
+import okio.Path.Companion.toOkioPath
 import tachiyomi.core.db.Transactions
 import tachiyomi.domain.backup.model.Backup
 import tachiyomi.domain.library.model.Category
@@ -33,17 +34,19 @@ import tachiyomi.domain.manga.service.ChapterRepository
 import tachiyomi.domain.manga.service.MangaRepository
 import tachiyomi.domain.track.model.Track
 import tachiyomi.domain.track.service.TrackRepository
-import java.io.File
 
 class CreateBackupTest : StringSpec({
 
+  val fileSystem = spyk(FileSystem.SYSTEM)
   val mangaRepository = mockk<MangaRepository>(relaxed = true)
   val categoryRepository = mockk<CategoryRepository>(relaxed = true)
   val chapterRepository = mockk<ChapterRepository>(relaxed = true)
   val trackRepository = mockk<TrackRepository>(relaxed = true)
   val transactions = mockk<Transactions>(relaxed = true)
-  val interactor = CreateBackup(mangaRepository, categoryRepository, chapterRepository,
-    trackRepository, transactions)
+  val interactor = CreateBackup(
+    fileSystem, mangaRepository, categoryRepository, chapterRepository, trackRepository,
+    transactions
+  )
   afterTest { clearAllMocks() }
 
   // Set defaults for repositories
@@ -128,18 +131,17 @@ class CreateBackupTest : StringSpec({
   }
 
   "writes to disk" {
-    val file = tempfile("dump.gz")
+    val file = tempfile("dump.gz").toOkioPath()
 
     val result = interactor.saveTo(file)
     result.shouldBeInstanceOf<CreateBackup.Result.Success>()
-    file.length() shouldBeGreaterThan 0
+    (fileSystem.metadata(file).size ?: 0) shouldBeGreaterThan 0
   }
 
   "fails to write to disk" {
-    val file = tempfile("dumpfail.gz")
-    mockkStatic("okio.Okio")
+    val file = tempfile("dumpfail.gz").toOkioPath()
     val error = IOException("Simulated IO exception")
-    every { file.sink(any()) } throws error
+    every { fileSystem.sink(any()) } throws error
 
     val result = interactor.saveTo(file)
     result.shouldBeInstanceOf<CreateBackup.Result.Error>()
@@ -147,7 +149,7 @@ class CreateBackupTest : StringSpec({
   }
 
   "creates a full backup" {
-    val file = File("/tmp/dump1.gz")
+    val file = tempfile("dump1.gz").toOkioPath()
 
     coEvery { categoryRepository.findAll() } returns listOf(
       Category(id = Category.ALL_ID, order = 0, updateInterval = 0),

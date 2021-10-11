@@ -12,6 +12,7 @@ import androidx.compose.animation.AnimatedVisibility
 import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.animation.slideInVertically
 import androidx.compose.animation.slideOutVertically
+import androidx.compose.foundation.background
 import androidx.compose.foundation.layout.Box
 import androidx.compose.material.BottomNavigation
 import androidx.compose.material.BottomNavigationItem
@@ -52,6 +53,7 @@ fun MainNavHost(startScreen: StartScreen) {
   val navController = rememberAnimatedNavController()
   val currentScreen by navController.currentBackStackEntryAsState()
   val currentRoute = currentScreen?.destination?.route
+  val customColors = CustomColors.current
 
   val (requestedHideBottomNav, requestHideBottomNav) = remember { mutableStateOf(false) }
 
@@ -62,7 +64,9 @@ fun MainNavHost(startScreen: StartScreen) {
   }
 
   Scaffold(
-    modifier = Modifier.navigationBarsPadding(),
+    modifier = Modifier
+      .background(customColors.bars)
+      .navigationBarsPadding(),
     content = {
       Box {
         Navigation(

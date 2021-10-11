@@ -8,46 +8,52 @@
 
 package tachiyomi.data.catalog
 
+import io.ktor.client.request.get
+import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
-import kotlinx.serialization.json.JsonArray
-import kotlinx.serialization.json.JsonObject
-import kotlinx.serialization.json.booleanOrNull
-import kotlinx.serialization.json.int
-import kotlinx.serialization.json.jsonPrimitive
-import kotlinx.serialization.json.long
-import tachiyomi.core.http.Http
-import tachiyomi.core.http.awaitBody
-import tachiyomi.core.http.get
+import tachiyomi.core.http.HttpClients
 import tachiyomi.domain.catalog.model.CatalogRemote
 import tachiyomi.domain.catalog.service.CatalogRemoteApi
 import javax.inject.Inject
 
-internal class CatalogGithubApi @Inject constructor(private val http: Http) : CatalogRemoteApi {
+internal class CatalogGithubApi @Inject constructor(
+  private val httpClients: HttpClients
+) : CatalogRemoteApi {
 
-  private val repoUrl = "https://raw.githubusercontent.com/tachiyomiorg/tachiyomi-extensions-1.x/repo"
+  private val repoUrl =
+    "https://raw.githubusercontent.com/tachiyomiorg/tachiyomi-extensions-1.x/repo"
 
   override suspend fun fetchCatalogs(): List<CatalogRemote> {
-    val body = http.defaultClient.get("$repoUrl/index.min.json").awaitBody()
-    val json = Json.Default.decodeFromString<JsonArray>(body)
-    return json.map { element ->
-      element as JsonObject
-      val name = element["name"]!!.jsonPrimitive.content
-      val pkgName = element["pkg"]!!.jsonPrimitive.content
-      val versionName = element["version"]!!.jsonPrimitive.content
-      val versionCode = element["code"]!!.jsonPrimitive.int
-      val lang = element["lang"]!!.jsonPrimitive.content
-      val apkName = element["apk"]!!.jsonPrimitive.content
-      val sourceId = element["id"]!!.jsonPrimitive.long
-      val description = element["description"]!!.jsonPrimitive.content
-      val nsfw = element["nsfw"]!!.jsonPrimitive.booleanOrNull ?: false
-
-      val apkUrl = "$repoUrl/apk/$apkName"
-      val iconUrl = "$repoUrl/icon/${apkName.replace(".apk", ".png")}"
-
-      CatalogRemote(name, description, sourceId, pkgName, versionName, versionCode, lang, apkUrl,
-        iconUrl, nsfw)
+    val response = httpClients.default.get<String>("$repoUrl/index.min.json")
+    val catalogs = Json.Default.decodeFromString<List<CatalogRemoteApiModel>>(response)
+    return catalogs.map { catalog ->
+      CatalogRemote(
+        name = catalog.name,
+        description = catalog.description,
+        sourceId = catalog.id,
+        pkgName = catalog.pkg,
+        versionName = catalog.version,
+        versionCode = catalog.code,
+        lang = catalog.lang,
+        pkgUrl = "$repoUrl/apk/${catalog.apk}",
+        iconUrl = "$repoUrl/icon/${catalog.apk.replace(".apk", ".png")}",
+        nsfw = catalog.nsfw
+      )
     }
   }
+
+  @Serializable
+  private data class CatalogRemoteApiModel(
+    val name: String,
+    val pkg: String,
+    val version: String,
+    val code: Int,
+    val lang: String,
+    val apk: String,
+    val id: Long,
+    val description: String,
+    val nsfw: Boolean
+  )
 
 }

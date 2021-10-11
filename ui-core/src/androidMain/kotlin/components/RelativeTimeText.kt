@@ -4,13 +4,13 @@ import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
-import tachiyomi.ui.core.util.getRelativeTimeString
-import java.util.Date
+import kotlinx.datetime.LocalDate
+import tachiyomi.core.util.asRelativeTimeString
 
 @Composable
-fun RelativeTimeText(modifier: Modifier = Modifier, date: Date) {
+fun RelativeTimeText(modifier: Modifier = Modifier, date: LocalDate) {
   Text(
-    text = date.getRelativeTimeString(),
+    text = date.asRelativeTimeString(),
     modifier = modifier,
     color = MaterialTheme.colors.onBackground
   )

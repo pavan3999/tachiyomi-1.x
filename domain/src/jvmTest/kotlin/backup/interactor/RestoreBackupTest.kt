@@ -18,8 +18,11 @@ import io.mockk.coInvoke
 import io.mockk.coVerify
 import io.mockk.coVerifyOrder
 import io.mockk.mockk
+import io.mockk.spyk
 import kotlinx.serialization.decodeFromByteArray
 import kotlinx.serialization.protobuf.ProtoBuf
+import okio.FileSystem
+import okio.Path.Companion.toOkioPath
 import okio.buffer
 import okio.gzip
 import okio.source
@@ -45,14 +48,17 @@ import java.io.IOException
 
 class RestoreBackupTest : StringSpec({
 
+  val fileSystem = spyk(FileSystem.SYSTEM)
   val mangaRepository = mockk<MangaRepository>(relaxed = true)
   val categoryRepository = mockk<CategoryRepository>(relaxed = true)
   val chapterRepository = mockk<ChapterRepository>(relaxed = true)
   val trackRepository = mockk<TrackRepository>(relaxed = true)
   val mangaCategoryRepository = mockk<MangaCategoryRepository>(relaxed = true)
   val transactions = mockk<Transactions>(relaxed = true)
-  val interactor = RestoreBackup(mangaRepository, categoryRepository, chapterRepository,
-    trackRepository, mangaCategoryRepository, transactions)
+  val interactor = RestoreBackup(
+    fileSystem, mangaRepository, categoryRepository, chapterRepository, trackRepository,
+    mangaCategoryRepository, transactions
+  )
   afterTest { clearAllMocks() }
 
   // Set defaults for repositories
@@ -408,13 +414,13 @@ class RestoreBackupTest : StringSpec({
       mangaIndex + 1L
     }
 
-    val result = interactor.restoreFrom(file)
+    val result = interactor.restoreFrom(file.toOkioPath())
     coVerify { categoryRepository.insert(any<List<Category>>()) }
     result.shouldBeInstanceOf<RestoreBackup.Result.Success>()
   }
 
   "fails to restore a full backup" {
-    val file = tempfile("nonexistentbackup.gz")
+    val file = tempfile("nonexistentbackup.gz").toOkioPath()
     val result = interactor.restoreFrom(file)
     result.shouldBeInstanceOf<RestoreBackup.Result.Error>()
     result.error.shouldBeInstanceOf<IOException>()

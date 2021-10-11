@@ -49,7 +49,6 @@ kotlin {
           implementation(project(Module.sourceApi))
           implementation(project(Module.domain))
           implementation(Deps.toothpick.runtime)
-          implementation(Deps.toothpick.ktp)
         }
         project.dependencies.apply {
           add("kapt", Deps.toothpick.compiler)
@@ -67,8 +66,7 @@ idea {
           "src/commonMain/kotlin",
           "src/jvmMain/kotlin",
           "src/androidMain/kotlin",
-          "src/sharedJvmMain/kotlin",
-          "src/sharedAndroidMain/kotlin"
+          "src/sharedJvmMain/kotlin"
         ).forEach { put(it, "tachiyomi.ui") }
       }
     }

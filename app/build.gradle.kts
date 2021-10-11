@@ -36,7 +36,6 @@ kotlin {
         dependencies {
           implementation(project(Module.domain))
           implementation(Deps.toothpick.runtime)
-          implementation(Deps.toothpick.ktp)
           implementation(Deps.tinylog.impl)
         }
         project.dependencies.apply {
@@ -74,8 +73,7 @@ idea {
           "src/commonMain/kotlin",
           "src/jvmMain/kotlin",
           "src/androidMain/kotlin",
-          "src/sharedJvmMain/kotlin",
-          "src/sharedAndroidMain/kotlin"
+          "src/sharedJvmMain/kotlin"
         ).forEach { put(it, "tachiyomi.app") }
       }
     }

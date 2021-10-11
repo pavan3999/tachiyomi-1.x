@@ -9,14 +9,12 @@
 package tachiyomi.data.history
 
 import kotlinx.coroutines.flow.Flow
-import kotlinx.coroutines.flow.mapLatest
 import tachiyomi.core.di.Inject
 import tachiyomi.data.Database
 import tachiyomi.data.DatabaseHandler
 import tachiyomi.domain.history.model.History
 import tachiyomi.domain.history.model.HistoryWithRelations
 import tachiyomi.domain.history.service.HistoryRepository
-import java.util.Date
 
 internal class HistoryRepositoryImpl @Inject constructor(
   private val handler: DatabaseHandler
@@ -30,17 +28,9 @@ internal class HistoryRepositoryImpl @Inject constructor(
     return handler.awaitList { historyQueries.findAll(historyMapper) }
   }
 
-  override fun subscribeAllWithRelationByDate(): Flow<Map<Date, List<HistoryWithRelations>>> {
-    // TODO
-    //val formatter = SimpleDateFormat("yy-MM-dd", Locale.getDefault())
+  override fun subscribeAll(): Flow<List<HistoryWithRelations>> {
     return handler
       .subscribeToList { historyQueries.findAllWithRelations(historyWithRelationsMapper) }
-      .mapLatest { history ->
-        history
-          .groupBy { Date(it.readAt) }
-//          .groupBy { formatter.parse(it.date) }
-//          .toSortedMap(reverseOrder())
-      }
   }
 
   override suspend fun insert(history: History) {

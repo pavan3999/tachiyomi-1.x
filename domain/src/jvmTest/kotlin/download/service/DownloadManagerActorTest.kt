@@ -26,19 +26,21 @@ import io.mockk.coEvery
 import io.mockk.every
 import io.mockk.just
 import io.mockk.mockk
+import io.mockk.spyk
 import io.mockk.verify
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.Job
 import kotlinx.coroutines.channels.Channel
 import kotlinx.coroutines.channels.ClosedReceiveChannelException
 import kotlinx.coroutines.launch
+import okio.FileSystem
+import okio.Path
 import tachiyomi.core.prefs.Preference
 import tachiyomi.domain.download.model.SavedDownload
 import tachiyomi.domain.download.service.DownloadManagerActor.Message
 import tachiyomi.domain.download.service.DownloadManagerActor.State
 import tachiyomi.domain.manga.model.Chapter
 import tachiyomi.domain.manga.model.Manga
-import java.io.File
 import kotlin.time.DurationUnit
 import kotlin.time.ExperimentalTime
 import kotlin.time.toDuration
@@ -52,7 +54,8 @@ class DownloadManagerActorTest : FunSpec({
   val downloader = mockk<Downloader>()
   val compressor = mockk<DownloadCompressor>()
   val repository = mockk<DownloadRepository>()
-  val tmpFile = mockk<File>()
+  val fileSystem = spyk(FileSystem.SYSTEM)
+  val tmpFile = mockk<Path>()
 
   lateinit var actor: TestDownloadManagerActor
 
@@ -73,22 +76,26 @@ class DownloadManagerActorTest : FunSpec({
   beforeTest {
     every { preferences.compress() } returns compressPreference
     messages = Channel()
-    actor = TestDownloadManagerActor(messages, preferences, downloader, compressor, repository)
+    actor = TestDownloadManagerActor(
+      messages, preferences, downloader, compressor, repository, fileSystem
+    )
     every { compressPreference.get() } returns false
     coEvery { repository.findAll() } returns emptyList()
     coEvery { downloader.worker(any(), any(), any()) } returns Job()
     coEvery { compressor.worker(any(), any(), any(), any()) } returns Job()
     coEvery { repository.delete(any<Long>()) } just Runs
-    every { tmpFile.absolutePath } returns "/tmp/nonexistentfile_tmp"
-    every { tmpFile.renameTo(any()) } returns true
+    every { tmpFile.toString() } returns "/tmp/nonexistentfile_tmp"
+    every { fileSystem.atomicMove(any(), any()) } returns Unit
   }
 
   context("restore") {
     test("saved downloads") {
-      val savedDownloads = listOf(SavedDownload(
-        chapterId = 1, mangaId = 1, priority = 0, sourceId = 1, mangaName = "", chapterKey = "",
-        chapterName = "", scanlator = ""
-      ))
+      val savedDownloads = listOf(
+        SavedDownload(
+          chapterId = 1, mangaId = 1, priority = 0, sourceId = 1, mangaName = "", chapterKey = "",
+          chapterName = "", scanlator = ""
+        )
+      )
       coEvery { repository.findAll() } returns savedDownloads
 
       withActor {
@@ -198,7 +205,7 @@ class DownloadManagerActorTest : FunSpec({
 
         actor._downloads shouldNotContain download
         actor._states[download.chapterId].shouldBeNull()
-        verify { tmpFile.renameTo(any()) }
+        verify { fileSystem.atomicMove(tmpFile, any()) }
       }
     }
 
@@ -213,7 +220,7 @@ class DownloadManagerActorTest : FunSpec({
 
         actor._downloads shouldContain download
         actor._states[download.chapterId].shouldBeInstanceOf<State.Failed>()
-        verify(exactly = 0) { tmpFile.renameTo(any()) }
+        verify(exactly = 0) { fileSystem.atomicMove(tmpFile, any()) }
       }
     }
 
@@ -327,7 +334,7 @@ class DownloadManagerActorTest : FunSpec({
 
         actor._downloads shouldNotContain download
         actor._states[download.chapterId].shouldBeNull()
-        verify { tmpFile.renameTo(any()) }
+        verify { fileSystem.atomicMove(tmpFile, any()) }
       }
     }
 
@@ -346,7 +353,7 @@ class DownloadManagerActorTest : FunSpec({
 
         actor._downloads shouldContain download
         actor._states[download.chapterId].shouldBeInstanceOf<State.Failed>()
-        verify(exactly = 0) { tmpFile.renameTo(any()) }
+        verify(exactly = 0) { fileSystem.atomicMove(tmpFile, any()) }
       }
     }
 
@@ -363,7 +370,7 @@ class DownloadManagerActorTest : FunSpec({
 
         actor._downloads shouldContain download
         actor._states[download.chapterId].shouldBeInstanceOf<State.Completing>()
-        verify(exactly = 0) { tmpFile.renameTo(any()) }
+        verify(exactly = 0) { fileSystem.atomicMove(tmpFile, any()) }
       }
     }
 
@@ -384,7 +391,7 @@ class DownloadManagerActorTest : FunSpec({
 
         actor._downloads shouldNotContain download
         actor._states[download.chapterId].shouldBeNull()
-        verify { tmpFile.renameTo(any()) }
+        verify { fileSystem.atomicMove(tmpFile, any()) }
       }
     }
   }
@@ -397,8 +404,9 @@ private class TestDownloadManagerActor(
   preferences: DownloadPreferences,
   downloader: Downloader,
   compressor: DownloadCompressor,
-  repository: DownloadRepository
-) : DownloadManagerActor(messages, preferences, downloader, compressor, repository) {
+  repository: DownloadRepository,
+  fileSystem: FileSystem
+) : DownloadManagerActor(messages, preferences, downloader, compressor, repository, fileSystem) {
 
   val _downloads get() = downloads
   val _workerJob get() = workerJob

@@ -15,7 +15,7 @@ package tachiyomi.core.prefs
 class PrefixedPreferenceStore(
   private val commonStore: PreferenceStore,
   private val prefix: String
-): PreferenceStore {
+) : PreferenceStore {
 
   /**
    * Returns a [String] preference for this [key].

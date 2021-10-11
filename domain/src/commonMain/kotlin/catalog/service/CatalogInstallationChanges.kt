@@ -8,10 +8,10 @@
 
 package tachiyomi.domain.catalog.service
 
-import kotlinx.coroutines.flow.Flow
+import kotlinx.coroutines.flow.SharedFlow
 
 interface CatalogInstallationChanges {
-  val flow: Flow<CatalogInstallationChange>
+  val flow: SharedFlow<CatalogInstallationChange>
 }
 
 sealed class CatalogInstallationChange {

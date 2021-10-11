@@ -19,7 +19,7 @@ import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.async
 import kotlinx.coroutines.awaitAll
 import kotlinx.coroutines.runBlocking
-import tachiyomi.core.http.Http
+import tachiyomi.core.http.HttpClients
 import tachiyomi.core.log.Log
 import tachiyomi.core.prefs.AndroidPreferenceStore
 import tachiyomi.core.prefs.PrefixedPreferenceStore
@@ -40,7 +40,7 @@ import javax.inject.Inject
  */
 internal class AndroidCatalogLoader @Inject constructor(
   private val context: Application,
-  private val http: Http
+  private val httpClients: HttpClients
 ) : CatalogLoader {
 
   private val pkgManager = context.packageManager
@@ -225,7 +225,8 @@ internal class AndroidCatalogLoader @Inject constructor(
 
     val nsfw = metadata.getInt(METADATA_NSFW, 0) == 1
 
-    val dependencies = Dependencies(http, PrefixedPreferenceStore(catalogPreferences, pkgName))
+    val preferenceSource = PrefixedPreferenceStore(catalogPreferences, pkgName)
+    val dependencies = Dependencies(httpClients, preferenceSource)
 
     return ValidatedData(versionCode, versionName, description, nsfw, classToLoad, dependencies)
   }

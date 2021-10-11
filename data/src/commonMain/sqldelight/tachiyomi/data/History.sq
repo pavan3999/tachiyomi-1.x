@@ -16,7 +16,8 @@ SELECT history.*, manga.title, manga.sourceId, manga.cover, manga.favorite, chap
   date(ROUND(readAt / 1000), 'unixepoch', 'localtime') AS date
 FROM history
 JOIN manga ON history.mangaId = manga.id
-JOIN chapter ON history.chapterId = chapter.id;
+JOIN chapter ON history.chapterId = chapter.id
+ORDER BY readAt DESC;
 
 insert:
 INSERT INTO history VALUES (?, ?, ?);

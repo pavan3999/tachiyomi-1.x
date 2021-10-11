@@ -9,17 +9,15 @@
 package tachiyomi.data.catalog
 
 import android.app.Application
+import io.ktor.client.request.get
+import io.ktor.http.HttpHeaders
+import io.ktor.utils.io.ByteReadChannel
 import kotlinx.coroutines.flow.flow
-import tachiyomi.core.http.Http
-import tachiyomi.core.http.awaitSuccess
-import tachiyomi.core.http.get
-import tachiyomi.core.http.saveTo
+import tachiyomi.core.http.HttpClients
+import tachiyomi.core.io.saveTo
 import tachiyomi.core.log.Log
 import tachiyomi.domain.catalog.model.CatalogRemote
-import tachiyomi.domain.catalog.model.InstallStep.Completed
-import tachiyomi.domain.catalog.model.InstallStep.Downloading
-import tachiyomi.domain.catalog.model.InstallStep.Error
-import tachiyomi.domain.catalog.model.InstallStep.Installing
+import tachiyomi.domain.catalog.model.InstallStep.*
 import tachiyomi.domain.catalog.service.CatalogInstaller
 import java.io.File
 import javax.inject.Inject
@@ -31,14 +29,14 @@ import javax.inject.Inject
  */
 internal class AndroidCatalogInstaller @Inject constructor(
   private val context: Application,
-  private val http: Http,
-  private val installationChanges: AndroidCatalogInstallationChanges
+  private val httpClients: HttpClients,
+  private val installationChanges: AndroidCatalogInstallationChanges,
 ) : CatalogInstaller {
 
   /**
    * The client used for http requests.
    */
-  private val client get() = http.defaultClient
+  private val client get() = httpClients.default
 
   /**
    * Adds the given extension to the downloads queue and returns an observable containing its
@@ -51,10 +49,14 @@ internal class AndroidCatalogInstaller @Inject constructor(
     val tmpApkFile = File(context.cacheDir, "${catalog.pkgName}.apk")
     val tmpIconFile = File(context.cacheDir, "${catalog.pkgName}.png")
     try {
-      val apkResponse = client.get(catalog.pkgUrl, cache = http.noStore).awaitSuccess()
+      val apkResponse = client.get<ByteReadChannel>(catalog.pkgUrl) {
+        headers.append(HttpHeaders.CacheControl, "no-store")
+      }
       apkResponse.saveTo(tmpApkFile)
 
-      val iconResponse = client.get(catalog.iconUrl, cache = http.noStore).awaitSuccess()
+      val iconResponse = client.get<ByteReadChannel>(catalog.iconUrl) {
+        headers.append(HttpHeaders.CacheControl, "no-store")
+      }
       iconResponse.saveTo(tmpIconFile)
 
       emit(Installing)

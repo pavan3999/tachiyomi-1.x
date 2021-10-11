@@ -8,16 +8,15 @@
 
 package tachiyomi.core.os
 
-import androidx.lifecycle.Lifecycle
-import androidx.lifecycle.LifecycleObserver
-import androidx.lifecycle.OnLifecycleEvent
+import androidx.lifecycle.DefaultLifecycleObserver
+import androidx.lifecycle.LifecycleOwner
 import androidx.lifecycle.ProcessLifecycleOwner
 import kotlinx.coroutines.flow.MutableStateFlow
 import kotlinx.coroutines.flow.StateFlow
 import tachiyomi.core.log.Log
 
 @Suppress("ObjectPropertyName")
-actual object AppState : LifecycleObserver {
+actual object AppState : DefaultLifecycleObserver {
 
   private val _networkFlow = MutableStateFlow(false)
   actual val networkFlow: StateFlow<Boolean> get() = _networkFlow
@@ -29,14 +28,12 @@ actual object AppState : LifecycleObserver {
     ProcessLifecycleOwner.get().lifecycle.addObserver(this)
   }
 
-  @OnLifecycleEvent(Lifecycle.Event.ON_START)
-  private fun setForeground() {
+  override fun onStart(owner: LifecycleOwner) {
     Log.debug("Application now in foreground")
     _foregroundFlow.value = true
   }
 
-  @OnLifecycleEvent(Lifecycle.Event.ON_STOP)
-  private fun setBackground() {
+  override fun onStop(owner: LifecycleOwner) {
     Log.debug("Application went to background")
     _foregroundFlow.value = false
   }

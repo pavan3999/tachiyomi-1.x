@@ -11,14 +11,15 @@ package tachiyomi.ui.core.coil
 import android.app.Application
 import coil.ImageLoader
 import coil.util.CoilUtils
-import tachiyomi.core.http.Http
+import tachiyomi.core.http.HttpClients
+import tachiyomi.core.http.okhttp
 import tachiyomi.domain.catalog.interactor.GetLocalCatalog
 import tachiyomi.domain.library.service.LibraryCovers
 import javax.inject.Inject
 
 class CoilLoaderFactory @Inject constructor(
   private val context: Application,
-  private val http: Http,
+  private val httpClients: HttpClients,
   private val getLocalCatalog: GetLocalCatalog,
   private val libraryCovers: LibraryCovers
 ) {
@@ -26,8 +27,10 @@ class CoilLoaderFactory @Inject constructor(
   fun create(): ImageLoader {
     val coilCache = CoilUtils.createDefaultCache(context)
 
+    val okhttpClient = httpClients.default.okhttp
+
     val libraryFetcher = LibraryMangaFetcher(
-      http.defaultClient, libraryCovers, getLocalCatalog, coilCache
+      okhttpClient, libraryCovers, getLocalCatalog, coilCache
     )
 
     return ImageLoader.Builder(context)
@@ -36,7 +39,7 @@ class CoilLoaderFactory @Inject constructor(
         add(CatalogRemoteMapper())
         add(CatalogInstalledFetcher(context))
       }
-      .okHttpClient(http.defaultClient.newBuilder().cache(coilCache).build())
+      .okHttpClient(okhttpClient.newBuilder().cache(coilCache).build())
       .build()
   }
 

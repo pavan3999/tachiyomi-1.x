@@ -50,7 +50,11 @@ fun AppTheme(content: @Composable () -> Unit) {
 
   LaunchedEffect(customColors.isBarLight, transparentStatusBar) {
     val darkIcons = if (transparentStatusBar) colors.isLight else customColors.isBarLight
-    systemUiController.setStatusBarColor(Color.Transparent, darkIcons)
+    systemUiController.setSystemBarsColor(
+      color = Color.Transparent,
+      darkIcons = darkIcons,
+      isNavigationBarContrastEnforced = false
+    )
   }
 
   MaterialTheme(

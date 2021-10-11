@@ -40,14 +40,14 @@ class SyncRemoteCatalogsTest : StringSpec({
   }
   "checks for updates if some time has passed" {
     every { preferences.lastRemoteCheck() } returns mockLastRemoteCheck(
-      System.currentTimeMillis() - SyncRemoteCatalogs.minTimeApiCheck - 1000
+      System.currentTimeMillis() - SyncRemoteCatalogs.minTimeApiCheck.inWholeMilliseconds - 1000
     )
     interactor.await(false)
     coVerify { api.fetchCatalogs() }
   }
   "doesn't check for updates if not enough time has passed" {
     every { preferences.lastRemoteCheck() } returns mockLastRemoteCheck(
-      System.currentTimeMillis() - SyncRemoteCatalogs.minTimeApiCheck + 1000
+      System.currentTimeMillis() - SyncRemoteCatalogs.minTimeApiCheck.inWholeMilliseconds + 1000
     )
     interactor.await(false)
     coVerify(exactly = 0) { api.fetchCatalogs() }

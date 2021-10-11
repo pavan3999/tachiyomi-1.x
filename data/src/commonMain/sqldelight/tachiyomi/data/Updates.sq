@@ -1,10 +1,11 @@
-CREATE VIEW updates AS SELECT
+CREATE VIEW IF NOT EXISTS updates AS SELECT
   manga.id, manga.sourceId, manga.`key`, manga.title, manga.cover, manga.favorite,
   chapter.dateUpload, chapter.id chapterId, chapter.name, chapter.read, chapter.number,
   date(ROUND(chapter.dateUpload / 1000), 'unixepoch', 'localtime') AS date
 FROM manga
 INNER JOIN chapter ON manga.id = chapter.mangaId
-WHERE manga.favorite = 1;
+WHERE manga.favorite = 1
+ORDER BY chapter.dateUpload DESC;
 
 findAll:
 SELECT * FROM updates;

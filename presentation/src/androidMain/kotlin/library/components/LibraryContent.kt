@@ -12,11 +12,10 @@ import androidx.compose.animation.ExperimentalAnimationApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.State
-import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import androidx.compose.runtime.snapshotFlow
 import com.google.accompanist.pager.ExperimentalPagerApi
-import com.google.accompanist.pager.PagerState
+import com.google.accompanist.pager.rememberPagerState
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
@@ -43,12 +42,8 @@ fun LibraryContent(
   if (categories.isEmpty()) return
 
   val scope = rememberCoroutineScope()
-  val infiniteLoop = categories.size > 2
-  val state = remember(infiniteLoop) {
-    PagerState(categories.size, currentPage, infiniteLoop = infiniteLoop)
-  }.apply {
-    pageCount = categories.size
-  }
+//  val infiniteLoop = categories.size > 2 // TODO not supoorted anymore
+  val state = rememberPagerState(currentPage)
 
   LaunchedEffect(state) {
     snapshotFlow { state.currentPage }.collect {
@@ -65,6 +60,7 @@ fun LibraryContent(
   )
   LibraryPager(
     state = state,
+    pageCount = categories.size,
     displayMode = displayMode,
     selectedManga = selectedManga,
     getColumnsForOrientation = getColumnsForOrientation,

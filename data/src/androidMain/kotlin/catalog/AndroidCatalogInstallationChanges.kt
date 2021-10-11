@@ -15,14 +15,10 @@ import android.content.Intent
 import android.content.IntentFilter
 import kotlinx.coroutines.flow.MutableSharedFlow
 import tachiyomi.domain.catalog.service.CatalogInstallationChange
-import tachiyomi.domain.catalog.service.CatalogInstallationChange.LocalInstall
-import tachiyomi.domain.catalog.service.CatalogInstallationChange.LocalUninstall
-import tachiyomi.domain.catalog.service.CatalogInstallationChange.SystemInstall
-import tachiyomi.domain.catalog.service.CatalogInstallationChange.SystemUninstall
+import tachiyomi.domain.catalog.service.CatalogInstallationChange.*
 import tachiyomi.domain.catalog.service.CatalogInstallationChanges
-import javax.inject.Inject
 
-internal class AndroidCatalogInstallationChanges @Inject constructor(
+internal class AndroidCatalogInstallationChanges(
   context: Application
 ) : CatalogInstallationChanges {
 

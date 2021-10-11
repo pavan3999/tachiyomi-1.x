@@ -8,14 +8,21 @@
 
 package tachiyomi.core.http
 
+import app.cash.quickjs.QuickJs
+import javax.inject.Inject
+import javax.inject.Singleton
+
 /**
- * A factory for creating [JS] instances.
+ * A factory for creating instances of [JS].
  */
-interface JSFactory {
+@Singleton
+actual class JSFactory @Inject internal constructor() {
 
   /**
    * Returns a new instance of [JS].
    */
-  fun create(): JS
+  actual fun create(): JS {
+    return JS(QuickJs.create())
+  }
 
 }

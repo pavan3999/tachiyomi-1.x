@@ -11,7 +11,6 @@ package tachiyomi.app
 import android.app.Application
 import tachiyomi.app.initializers.AppInitializers
 import tachiyomi.app.modules.SystemModule
-import tachiyomi.core.CoreModule
 import tachiyomi.data.DataModule
 import toothpick.Toothpick
 import toothpick.configuration.Configuration
@@ -46,7 +45,6 @@ class App : Application() {
       .installModules(
         SmoothieApplicationModule(this),
         SystemModule(this),
-        CoreModule,
         DataModule(this)
       )
       .inject(this)

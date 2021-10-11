@@ -14,7 +14,7 @@ import androidx.compose.runtime.getValue
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.referentialEqualityPolicy
 import androidx.compose.runtime.setValue
-import java.util.Date
+import kotlinx.datetime.LocalDate
 import tachiyomi.domain.history.model.HistoryWithRelations as History
 
 @Stable
@@ -22,7 +22,7 @@ interface HistoryState {
 
   val isLoading: Boolean
   val isEmpty: Boolean
-  val history: Map<Date, List<History>>
+  val history: Map<LocalDate, List<History>>
   val isSearching: Boolean
   var query: String?
 }
@@ -35,12 +35,12 @@ class HistoryStateImpl : HistoryState {
 
   override var isLoading: Boolean by mutableStateOf(true)
   override val isEmpty: Boolean by derivedStateOf { history.isEmpty() }
-  override var history: Map<Date, List<History>> by mutableStateOf(emptyMap())
+  override var history: Map<LocalDate, List<History>> by mutableStateOf(emptyMap())
   override val isSearching: Boolean by derivedStateOf { query != null }
   override var query: String? by mutableStateOf(null)
 
   var allHistory by mutableStateOf(
-    mapOf<Date, List<History>>(),
+    mapOf<LocalDate, List<History>>(),
     referentialEqualityPolicy()
   )
 }

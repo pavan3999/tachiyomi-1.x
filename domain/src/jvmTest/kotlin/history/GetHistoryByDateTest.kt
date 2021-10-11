@@ -16,11 +16,16 @@ import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toJavaLocalDateTime
+import kotlinx.datetime.toLocalDate
+import kotlinx.datetime.toLocalDateTime
 import tachiyomi.domain.history.interactor.GetHistoryByDate
 import tachiyomi.domain.history.model.HistoryWithRelations
 import tachiyomi.domain.history.service.HistoryRepository
-import java.text.SimpleDateFormat
-import java.util.Date
+import java.time.format.DateTimeFormatter
 
 class GetHistoryByDateTest : StringSpec({
   val repository = mockk<HistoryRepository>()
@@ -28,13 +33,13 @@ class GetHistoryByDateTest : StringSpec({
   afterTest { clearAllMocks() }
 
   "called function" {
-    every { repository.subscribeAllWithRelationByDate() } returns flowOf()
+    every { repository.subscribeAll() } returns flowOf()
     interactor.subscribeAll()
-    verify { repository.subscribeAllWithRelationByDate() }
+    verify { repository.subscribeAll() }
   }
   "sorts by date" {
-    every { repository.subscribeAllWithRelationByDate() } returns flowOf(
-      mockkSortedMap(
+    every { repository.subscribeAll() } returns flowOf(
+      listOf(
         mockkUpdates(1627906952000),
         mockkUpdates(1627906952000),
         mockkUpdates(1627734152000),
@@ -45,27 +50,27 @@ class GetHistoryByDateTest : StringSpec({
 
     interactor.subscribeAll().collect { updates ->
       updates.keys shouldContainExactlyInAnyOrder setOf(
-        formatter.formatAndParse(1627906952000),
-        formatter.formatAndParse(1627734152100)
+        1627906952000.formatAndParse(),
+        1627734152100.formatAndParse()
       )
     }
   }
 })
 
-private val formatter = SimpleDateFormat("yy-MM-dd")
-
-private fun mockkSortedMap(vararg mockkUpdates: HistoryWithRelations): Map<Date, List<HistoryWithRelations>> {
-  return mockkUpdates.groupBy { formatter.parse(it.date) }
-}
 
 private fun mockkUpdates(mockkDateUploaded: Long): HistoryWithRelations {
   return mockk {
     every { readAt } returns mockkDateUploaded
-    every { date } returns formatter.format(Date(readAt))
+    every { date } returns Instant.fromEpochMilliseconds(mockkDateUploaded).dateString
   }
 }
 
-private fun SimpleDateFormat.formatAndParse(epoch: Long): Date {
-  val string = this.format(Date(epoch))
-  return this.parse(string)
+private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+
+private fun Long.formatAndParse(): LocalDate {
+  val string = Instant.fromEpochMilliseconds(this).dateString
+  return string.toLocalDate()
 }
+
+private val Instant.dateString
+  get() = toLocalDateTime(TimeZone.UTC).toJavaLocalDateTime().format(formatter)

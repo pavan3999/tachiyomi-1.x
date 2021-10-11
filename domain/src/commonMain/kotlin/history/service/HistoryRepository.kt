@@ -11,7 +11,6 @@ package tachiyomi.domain.history.service
 import kotlinx.coroutines.flow.Flow
 import tachiyomi.domain.history.model.History
 import tachiyomi.domain.history.model.HistoryWithRelations
-import java.util.Date
 
 interface HistoryRepository {
 
@@ -19,7 +18,7 @@ interface HistoryRepository {
 
   suspend fun findAll(): List<History>
   
-  fun subscribeAllWithRelationByDate(): Flow<Map<Date, List<HistoryWithRelations>>>
+  fun subscribeAll(): Flow<List<HistoryWithRelations>>
 
   suspend fun insert(history: History)
 

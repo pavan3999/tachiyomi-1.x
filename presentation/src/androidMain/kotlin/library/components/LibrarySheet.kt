@@ -55,9 +55,7 @@ import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import tachiyomi.domain.library.model.DisplayMode
 import tachiyomi.domain.library.model.LibraryFilter
-import tachiyomi.domain.library.model.LibraryFilter.Value.Excluded
-import tachiyomi.domain.library.model.LibraryFilter.Value.Included
-import tachiyomi.domain.library.model.LibraryFilter.Value.Missing
+import tachiyomi.domain.library.model.LibraryFilter.Value.*
 import tachiyomi.domain.library.model.LibrarySort
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.localize
@@ -75,7 +73,7 @@ fun LibrarySheet(
 ) {
   val vm = viewModel<LibrarySheetViewModel>()
   val scope = rememberCoroutineScope()
-  val pagerState = rememberPagerState(3, currentPage, initialOffscreenLimit = 3)
+  val pagerState = rememberPagerState(currentPage)
   LaunchedEffect(pagerState) {
     snapshotFlow { pagerState.currentPage }.collect {
       onPageChanged(it)
@@ -100,6 +98,7 @@ fun LibrarySheet(
     }
   }
   HorizontalPager(
+    count = 3,
     state = pagerState,
     verticalAlignment = Alignment.Top,
   ) { page ->

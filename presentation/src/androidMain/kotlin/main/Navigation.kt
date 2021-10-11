@@ -9,13 +9,16 @@
 package tachiyomi.ui.main
 
 import androidx.compose.animation.ExperimentalAnimationApi
+import androidx.compose.animation.core.tween
+import androidx.compose.animation.fadeIn
+import androidx.compose.animation.fadeOut
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.navigation.NavController
 import androidx.navigation.NavGraphBuilder
 import androidx.navigation.NavHostController
 import androidx.navigation.NavType
-import androidx.navigation.compose.navArgument
+import androidx.navigation.navArgument
 import androidx.navigation.navDeepLink
 import androidx.navigation.navigation
 import com.google.accompanist.navigation.animation.AnimatedNavHost
@@ -59,7 +62,9 @@ internal fun Navigation(
   AnimatedNavHost(
     navController = navController,
     startDestination = startScreen.route,
-    modifier = modifier
+    modifier = modifier,
+    enterTransition = { _, _ -> fadeIn(animationSpec = tween(700)) },
+    exitTransition = { _, _ -> fadeOut(animationSpec = tween(700)) },
   ) {
     addLibraryTopLevel(navController, requestHideNavigator)
     addUpdatesTopLevel(navController)

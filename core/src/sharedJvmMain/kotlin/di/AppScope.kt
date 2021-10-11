@@ -8,25 +8,24 @@
 
 package tachiyomi.core.di
 
-import toothpick.Scope
 import toothpick.Toothpick
 
 /**
  * The global scope for dependency injection that will provide all the application level components.
  */
-object AppScope : Scope by Toothpick.openRootScope() {
+actual object AppScope : Scope by Toothpick.openRootScope() {
 
   /**
    * Returns a new subscope inheriting the root scope.
    */
-  fun subscope(any: Any): Scope {
+  actual fun subscope(any: Any): Scope {
     return openSubScope(any)
   }
 
   /**
    * Returns an instance of [T] from the root scope.
    */
-  inline fun <reified T> getInstance(): T {
+  actual inline fun <reified T> getInstance(): T {
     return getInstance(T::class.java)
   }
 

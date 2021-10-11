@@ -8,11 +8,16 @@ import io.mockk.mockk
 import io.mockk.verify
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.flow.flowOf
+import kotlinx.datetime.Instant
+import kotlinx.datetime.LocalDate
+import kotlinx.datetime.TimeZone
+import kotlinx.datetime.toJavaLocalDateTime
+import kotlinx.datetime.toLocalDate
+import kotlinx.datetime.toLocalDateTime
 import tachiyomi.domain.updates.interactor.GetUpdatesGroupByDate
 import tachiyomi.domain.updates.model.UpdatesManga
 import tachiyomi.domain.updates.service.UpdatesRepository
-import java.text.SimpleDateFormat
-import java.util.Date
+import java.time.format.DateTimeFormatter
 
 class GetUpdatesGroupByDateTest : StringSpec({
   val repository = mockk<UpdatesRepository>()
@@ -26,7 +31,7 @@ class GetUpdatesGroupByDateTest : StringSpec({
   }
   "sorts by date" {
     every { repository.subscribeAll() } returns flowOf(
-      mockkSortedMap(
+      listOf(
         mockkUpdates(1627906952000),
         mockkUpdates(1627906952000),
         mockkUpdates(1627734152000),
@@ -37,27 +42,26 @@ class GetUpdatesGroupByDateTest : StringSpec({
 
     interactor.subscribeAll().collect { updates ->
       updates.keys shouldContainExactlyInAnyOrder setOf(
-        formatter.formatAndParse(1627906952000),
-        formatter.formatAndParse(1627734152100)
+        1627906952000.formatAndParse(),
+        1627734152100.formatAndParse()
       )
     }
   }
 })
 
-private val formatter = SimpleDateFormat("yy-MM-dd")
-
-private fun mockkSortedMap(vararg mockkUpdates: UpdatesManga): Map<Date, List<UpdatesManga>> {
-  return mockkUpdates.groupBy { formatter.parse(it.date) }
-}
-
 private fun mockkUpdates(mockkDateUploaded: Long): UpdatesManga {
   return mockk {
     every { dateUpload } returns mockkDateUploaded
-    every { date } returns formatter.format(Date(dateUpload))
+    every { date } returns Instant.fromEpochMilliseconds(mockkDateUploaded).dateString
   }
 }
 
-private fun SimpleDateFormat.formatAndParse(epoch: Long): Date {
-  val string = this.format(Date(epoch))
-  return this.parse(string)
+private val formatter = DateTimeFormatter.ofPattern("yyyy-MM-dd")
+
+private fun Long.formatAndParse(): LocalDate {
+  val string = Instant.fromEpochMilliseconds(this).dateString
+  return string.toLocalDate()
 }
+
+private val Instant.dateString
+  get() = toLocalDateTime(TimeZone.UTC).toJavaLocalDateTime().format(formatter)

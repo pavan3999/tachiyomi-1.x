@@ -10,10 +10,9 @@ package tachiyomi.domain.updates.service
 
 import kotlinx.coroutines.flow.Flow
 import tachiyomi.domain.updates.model.UpdatesManga
-import java.util.Date
 
 interface UpdatesRepository {
 
-  fun subscribeAll(): Flow<Map<Date, List<UpdatesManga>>>
+  fun subscribeAll(): Flow<List<UpdatesManga>>
 
 }

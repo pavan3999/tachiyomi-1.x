@@ -9,28 +9,30 @@ plugins {
 
 kotlin {
   jvm()
+
+  // Android is required for Toothpick's factories to be bundled. This could probably be removed
+  // if/when there's a KSP alternative.
   android()
 
   sourceSets {
     named("commonMain") {
       dependencies {
         implementation(project(Module.core))
+        implementation(project(Module.sourceApi))
         implementation(Deps.kotlin.serialization.protobuf)
+      }
+      project.dependencies {
+        add("kapt", Deps.toothpick.compiler)
       }
     }
     named("jvmMain") {
+      dependencies {
+        implementation(Deps.toothpick.runtime)
+      }
     }
     named("androidMain") {
-    }
-    listOf("jvmMain", "androidMain").forEach {
-      getByName(it) {
-        dependencies {
-          implementation(project(Module.sourceApi))
-          implementation(Deps.toothpick.runtime)
-        }
-        project.dependencies {
-          add("kapt", Deps.toothpick.compiler)
-        }
+      dependencies {
+        implementation(Deps.toothpick.runtime)
       }
     }
     named("jvmTest") {
@@ -40,9 +42,6 @@ kotlin {
         implementation(Deps.toothpick.testing)
         implementation(Deps.kotest.framework)
         implementation(Deps.kotest.assertions)
-      }
-      project.dependencies {
-        add("kapt", Deps.toothpick.compiler)
       }
     }
   }
@@ -70,7 +69,6 @@ idea {
           "src/jvmMain/kotlin",
           "src/androidMain/kotlin",
           "src/sharedJvmMain/kotlin",
-          "src/sharedAndroidMain/kotlin",
           "src/jvmTest/kotlin"
         ).forEach { put(it, "tachiyomi.domain") }
       }

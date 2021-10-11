@@ -17,7 +17,7 @@ buildscript {
 
 plugins {
   id("com.github.ben-manes.versions") version "0.39.0"
-  id("org.jetbrains.gradle.plugin.idea-ext") version "1.0.1"
+  id("org.jetbrains.gradle.plugin.idea-ext") version "1.1"
 }
 
 allprojects {
@@ -26,26 +26,39 @@ allprojects {
     google()
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
     maven { setUrl("https://jitpack.io") }
-    maven { setUrl("https://oss.sonatype.org/content/repositories/snapshots/") }
   }
 }
 
 subprojects {
   tasks.withType<org.jetbrains.kotlin.gradle.dsl.KotlinJvmCompile> {
     kotlinOptions {
-      freeCompilerArgs = freeCompilerArgs + listOf(
-        "-Xopt-in=kotlin.RequiresOptIn",
-        "-Xuse-experimental=kotlin.ExperimentalStdlibApi",
-        "-Xuse-experimental=kotlinx.coroutines.FlowPreview",
-        "-Xuse-experimental=kotlinx.coroutines.ExperimentalCoroutinesApi",
-        "-Xuse-experimental=kotlinx.serialization.ExperimentalSerializationApi",
-        "-Xuse-experimental=androidx.compose.foundation.ExperimentalFoundationApi"
-      )
       jvmTarget = JavaVersion.VERSION_1_8.toString()
+      freeCompilerArgs = freeCompilerArgs + listOf(
+        "-Xjvm-default=compatibility",
+      )
     }
   }
   tasks.withType<Test> {
     useJUnitPlatform()
+  }
+
+  plugins.withType<org.jetbrains.kotlin.gradle.plugin.KotlinMultiplatformPluginWrapper> {
+    configure<org.jetbrains.kotlin.gradle.dsl.KotlinMultiplatformExtension> {
+      sourceSets.all {
+        languageSettings {
+          optIn("kotlin.RequiresOptIn")
+          optIn("kotlin.ExperimentalStdlibApi")
+          optIn("kotlin.time.ExperimentalTime")
+          optIn("kotlinx.coroutines.FlowPreview")
+          optIn("kotlinx.coroutines.ExperimentalCoroutinesApi")
+          optIn("kotlinx.coroutines.ObsoleteCoroutinesApi")
+          optIn("kotlinx.serialization.ExperimentalSerializationApi")
+          optIn("androidx.compose.foundation.ExperimentalFoundationApi")
+          optIn("okio.ExperimentalFileSystem")
+          optIn("io.ktor.util.InternalAPI")
+        }
+      }
+    }
   }
 
   plugins.withType<com.android.build.gradle.BasePlugin> {

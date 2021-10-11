@@ -28,6 +28,7 @@ import tachiyomi.domain.library.model.LibraryManga
 @Composable
 fun LibraryPager(
   state: PagerState,
+  pageCount: Int,
   displayMode: DisplayMode,
   selectedManga: List<Long>,
   getColumnsForOrientation: CoroutineScope.(Boolean) -> StateFlow<Int>,
@@ -46,7 +47,7 @@ fun LibraryPager(
     remember { mutableStateOf(0) }
   }
 
-  HorizontalPager(state = state) { page ->
+  HorizontalPager(count = pageCount, state = state) { page ->
     val library by getLibraryForPage(page)
     when (displayMode) {
       DisplayMode.CompactGrid -> LibraryMangaCompactGrid(
