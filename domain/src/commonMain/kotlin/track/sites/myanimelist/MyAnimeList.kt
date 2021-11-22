@@ -37,8 +37,7 @@
 //
 //  override val id = TrackServices.MYANIMELIST
 //
-//  override val name: String
-//    get() = "MyAnimeList"
+//  override val name = "MyAnimeList"
 //
 //  private var csrf = ""
 //

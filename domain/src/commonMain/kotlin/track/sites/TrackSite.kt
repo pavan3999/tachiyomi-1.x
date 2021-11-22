@@ -8,12 +8,13 @@
 
 package tachiyomi.domain.track.sites
 
+import io.ktor.http.Url
 import tachiyomi.domain.track.model.TrackSearchResult
 import tachiyomi.domain.track.model.TrackState
 import tachiyomi.domain.track.model.TrackStateUpdate
 import tachiyomi.domain.track.model.TrackStatus
 
-abstract class TrackSite {
+sealed class TrackSite {
 
   abstract val id: Int
 
@@ -29,11 +30,27 @@ abstract class TrackSite {
 
   abstract suspend fun getEntryId(mediaId: Long): Long?
 
-  // TODO is this abstraction worth it? Some sites use OAuth
-  abstract suspend fun login(username: String, password: String): Boolean
-
   abstract suspend fun logout()
 
   abstract fun getSupportedStatusList(): List<TrackStatus>
+
+}
+
+abstract class BasicTrackSite : TrackSite() {
+
+  abstract suspend fun login(username: String, password: String): Boolean
+
+}
+
+abstract class OAuthTrackSite : TrackSite() {
+
+  abstract val loginUrl: Url
+
+  /**
+   * Must start with "tachiyomi://track-auth"
+   */
+  abstract val deepLinkUriPattern: String
+
+  abstract suspend fun login(token: String?): Boolean
 
 }

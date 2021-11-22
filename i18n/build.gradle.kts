@@ -6,22 +6,28 @@ plugins {
 }
 
 kotlin {
-  jvm()
   android()
+  jvm("desktop")
 
   sourceSets {
     named("commonMain") {
       dependencies {
         compileOnly(compose.runtime)
+        compileOnly(compose.ui)
         api(Deps.moko.core)
       }
     }
-    named("jvmMain") {
-    }
     named("androidMain") {
-      dependencies {
-        compileOnly(compose.ui)
-      }
+    }
+    named("desktopMain") {
+    }
+  }
+}
+
+android {
+  sourceSets {
+    named("main") {
+      res.srcDir("src/commonMain/resources")
     }
   }
 }

@@ -11,6 +11,7 @@ package tachiyomi.domain.track.sites
 import tachiyomi.core.di.Inject
 import tachiyomi.core.http.HttpClients
 import tachiyomi.domain.track.service.TrackPreferences
+import tachiyomi.domain.track.sites.anilist.AniList
 
 class TrackServices @Inject constructor(
   httpClients: HttpClients,
@@ -19,6 +20,7 @@ class TrackServices @Inject constructor(
 
   val trackers = listOf<TrackSite>(
 //    MyAnimeList(httpClients, trackPreferences),
+    AniList(httpClients, trackPreferences),
   )
 
   fun get(id: Int): TrackSite? {

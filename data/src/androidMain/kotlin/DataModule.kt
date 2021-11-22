@@ -86,7 +86,9 @@ fun DataModule(context: Application) = module {
       )
     }
     .providesSingleton()
-  bind<LibraryUpdateScheduler>().toClass<LibraryUpdateSchedulerImpl>().singleton()
+  bind<LibraryUpdateScheduler>()
+    .toProviderInstance { LibraryUpdateSchedulerImpl(context) }
+    .providesSingleton()
 
   bind<CatalogRemoteRepository>().toClass<CatalogRemoteRepositoryImpl>().singleton()
   bind<CatalogRemoteApi>().toClass<CatalogGithubApi>().singleton()

@@ -8,6 +8,7 @@
 
 package tachiyomi.data.library
 
+import android.content.Context
 import androidx.work.Constraints
 import androidx.work.Data
 import androidx.work.ExistingWorkPolicy
@@ -18,9 +19,11 @@ import tachiyomi.domain.library.service.LibraryUpdateScheduler
 import java.util.concurrent.TimeUnit
 import javax.inject.Inject
 
-class LibraryUpdateSchedulerImpl @Inject constructor() : LibraryUpdateScheduler {
+class LibraryUpdateSchedulerImpl @Inject constructor(
+  context: Context,
+) : LibraryUpdateScheduler {
 
-  private val workManager = WorkManager.getInstance()
+  private val workManager = WorkManager.getInstance(context)
 
   override fun schedule(categoryId: Long, timeInHours: Int) {
     val work = OneTimeWorkRequest.Builder(LibraryUpdaterWorker::class.java)

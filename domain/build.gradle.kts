@@ -21,19 +21,10 @@ kotlin {
         implementation(project(Module.sourceApi))
         implementation(Deps.kotlin.serialization.protobuf)
       }
-      project.dependencies {
-        add("kapt", Deps.toothpick.compiler)
-      }
     }
     named("jvmMain") {
-      dependencies {
-        implementation(Deps.toothpick.runtime)
-      }
     }
     named("androidMain") {
-      dependencies {
-        implementation(Deps.toothpick.runtime)
-      }
     }
     named("jvmTest") {
       dependencies {
@@ -45,6 +36,10 @@ kotlin {
       }
     }
   }
+}
+
+dependencies {
+  add("kapt", Deps.toothpick.compiler)
 }
 
 val jacocoTestReport by tasks.creating(JacocoReport::class.java) {
@@ -66,9 +61,6 @@ idea {
       (this as ExtensionAware).configure<org.jetbrains.gradle.ext.PackagePrefixContainer> {
         arrayOf(
           "src/commonMain/kotlin",
-          "src/jvmMain/kotlin",
-          "src/androidMain/kotlin",
-          "src/sharedJvmMain/kotlin",
           "src/jvmTest/kotlin"
         ).forEach { put(it, "tachiyomi.domain") }
       }

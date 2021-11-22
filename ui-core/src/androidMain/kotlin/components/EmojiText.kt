@@ -14,12 +14,10 @@ import androidx.compose.ui.Modifier
 import androidx.compose.ui.viewinterop.AndroidView
 import androidx.emoji2.widget.EmojiTextView
 
-// TODO(inorichi): this is a workaround until emojis are compatible with compose. Text color and
-//  size is unsupported.
 @Composable
-fun EmojiText(
+actual fun EmojiText(
   text: String,
-  modifier: Modifier = Modifier
+  modifier: Modifier
 ) {
   AndroidView(
     factory = { EmojiTextView(it, null).apply { setTextColor(Color.BLACK) } },

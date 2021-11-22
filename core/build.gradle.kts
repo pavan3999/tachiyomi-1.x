@@ -1,5 +1,3 @@
-import org.gradle.api.publish.PublishingExtension
-
 plugins {
   kotlin("multiplatform")
   id("com.android.library")
@@ -10,8 +8,8 @@ plugins {
 }
 
 kotlin {
-  jvm()
   android()
+  jvm("desktop")
 
   sourceSets {
     named("commonMain") {
@@ -23,16 +21,11 @@ kotlin {
         api(Deps.ktor.core)
         api(Deps.ktor.serialization)
         api(Deps.okio)
-      }
-    }
-    named("jvmMain") {
-      kotlin.srcDir("src/sharedJvmMain/kotlin")
-      dependencies {
-        implementation(Deps.quickjsJvm)
+        api(Deps.toothpick.runtime)
       }
     }
     named("androidMain") {
-      kotlin.srcDir("src/sharedJvmMain/kotlin")
+      kotlin.srcDir("src/jvmMain/kotlin")
       dependencies {
         implementation(Deps.androidx.core)
         implementation(Deps.androidx.lifecycle.process)
@@ -40,20 +33,26 @@ kotlin {
         implementation(Deps.quickjsAndroid)
       }
     }
-    listOf("jvmMain", "androidMain").forEach { name ->
+    named("desktopMain") {
+      kotlin.srcDir("src/jvmMain/kotlin")
+      dependencies {
+        implementation(Deps.quickjsJvm)
+      }
+    }
+    listOf("androidMain", "desktopMain").forEach { name ->
       getByName(name) {
         dependencies {
           api(Deps.ktor.okhttp)
           implementation(Deps.tinylog.api)
           implementation(Deps.tinylog.impl)
-          implementation(Deps.toothpick.runtime)
-        }
-        project.dependencies {
-          add("kapt", Deps.toothpick.compiler)
         }
       }
     }
   }
+}
+
+dependencies {
+  add("kapt", Deps.toothpick.compiler)
 }
 
 afterEvaluate {
@@ -121,9 +120,9 @@ idea {
       (this as ExtensionAware).configure<org.jetbrains.gradle.ext.PackagePrefixContainer> {
         arrayOf(
           "src/commonMain/kotlin",
-          "src/jvmMain/kotlin",
           "src/androidMain/kotlin",
-          "src/sharedJvmMain/kotlin"
+          "src/desktopMain/kotlin",
+          "src/jvmMain/kotlin"
         ).forEach { put(it, "tachiyomi.core") }
       }
     }

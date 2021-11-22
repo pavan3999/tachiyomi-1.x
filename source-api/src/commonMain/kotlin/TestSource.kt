@@ -1,3 +1,11 @@
+/*
+ * Copyright (C) 2018 The Tachiyomi Open Source Project
+ *
+ * This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at http://mozilla.org/MPL/2.0/.
+ */
+
 package tachiyomi.source
 
 import kotlinx.coroutines.delay
@@ -123,10 +131,10 @@ class TestSource : CatalogSource {
     val manga1 = MangaInfo(
       "$id",
       "Manga $id",
-      "",
-      "",
-      "",
-      emptyList(),
+      "Artist $id",
+      "Author $id",
+      "Lorem ipsum",
+      listOf("Foo", "Bar"),
       0,
       ""
     )

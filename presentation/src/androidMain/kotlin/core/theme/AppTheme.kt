@@ -38,18 +38,18 @@ import javax.inject.Inject
 
 /**
  * Composable used to apply the application colors to [content].
- * It applies the [MaterialTheme] colors and the app's [CustomColors].
+ * It applies the [MaterialTheme] colors and the app's [ExtraColors].
  */
 @Composable
 fun AppTheme(content: @Composable () -> Unit) {
   val vm = viewModel<AppThemeViewModel>()
-  val (colors, customColors) = vm.getColors()
+  val (materialColors, customColors) = vm.getColors()
   val rippleTheme = vm.getRippleTheme()
   val systemUiController = rememberSystemUiController()
   val transparentStatusBar = LocalTransparentStatusBar.current.enabled
 
   LaunchedEffect(customColors.isBarLight, transparentStatusBar) {
-    val darkIcons = if (transparentStatusBar) colors.isLight else customColors.isBarLight
+    val darkIcons = if (transparentStatusBar) materialColors.isLight else customColors.isBarLight
     systemUiController.setSystemBarsColor(
       color = Color.Transparent,
       darkIcons = darkIcons,
@@ -57,13 +57,13 @@ fun AppTheme(content: @Composable () -> Unit) {
     )
   }
 
-  MaterialTheme(
-    colors = colors
+  AppColors(
+    materialColors = materialColors,
+    extraColors = customColors
   ) {
     ProvideWindowInsets {
       CompositionLocalProvider(
         LocalRippleTheme provides rippleTheme,
-        LocalCustomColors provides customColors,
         LocalImageLoader provides vm.coilLoader,
         content = content
       )
@@ -94,22 +94,21 @@ private class AppThemeViewModel @Inject constructor(
   }
 
   @Composable
-  fun getColors(): Pair<Colors, CustomColors> {
+  fun getColors(): Pair<Colors, ExtraColors> {
     val baseTheme = getBaseTheme(themeMode, lightTheme, darkTheme)
-    val colors = remember(baseTheme.colors.isLight) {
+    val colors = remember(baseTheme.materialColors.isLight) {
       baseThemeJob.cancelChildren()
 
-      if (baseTheme.colors.isLight) {
+      if (baseTheme.materialColors.isLight) {
         uiPreferences.getLightColors().asState(baseThemeScope)
       } else {
         uiPreferences.getDarkColors().asState(baseThemeScope)
       }
     }
 
-    val material = getMaterialColors(baseTheme.colors, colors.primary, colors.secondary)
-    val custom = getCustomColors(baseTheme.customColors, colors.bars)
-    val rememberedCustom = remember { CustomColors() }.apply { updateFrom(custom) }
-    return material to rememberedCustom
+    val material = getMaterialColors(baseTheme.materialColors, colors.primary, colors.secondary)
+    val custom = getExtraColors(baseTheme.extraColors, colors.bars)
+    return material to custom
   }
 
   @Composable
@@ -119,7 +118,8 @@ private class AppThemeViewModel @Inject constructor(
     darkTheme: Int
   ): Theme {
     fun getTheme(id: Int, fallbackIsLight: Boolean): Theme {
-      return themes.find { it.id == id } ?: themes.first { it.colors.isLight == fallbackIsLight }
+      return themes.find { it.id == id }
+        ?: themes.first { it.materialColors.isLight == fallbackIsLight }
     }
 
     return when (themeMode) {
@@ -150,9 +150,9 @@ private class AppThemeViewModel @Inject constructor(
     )
   }
 
-  private fun getCustomColors(colors: CustomColors, colorBars: Color): CustomColors {
+  private fun getExtraColors(colors: ExtraColors, colorBars: Color): ExtraColors {
     val appbar = colorBars.takeOrElse { colors.bars }
-    return CustomColors(
+    return ExtraColors(
       bars = appbar,
       onBars = if (appbar.luminance() > 0.5) Color.Black else Color.White
     )

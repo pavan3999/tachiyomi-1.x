@@ -10,6 +10,7 @@ package tachiyomi.domain.history.interactor
 
 import kotlinx.coroutines.NonCancellable
 import kotlinx.coroutines.withContext
+import kotlinx.datetime.Clock
 import tachiyomi.core.di.Inject
 import tachiyomi.domain.history.model.History
 import tachiyomi.domain.history.service.HistoryRepository
@@ -17,6 +18,9 @@ import tachiyomi.domain.history.service.HistoryRepository
 class UpsertHistory @Inject constructor(
   private val historyRepository: HistoryRepository
 ) {
+
+  suspend fun await(mangaId: Long, chapterId: Long) =
+    await(History(Clock.System.now().toEpochMilliseconds(), mangaId, chapterId))
 
   suspend fun await(history: History) = withContext(NonCancellable) {
     val oneOrNull = historyRepository.find(history.mangaId, history.chapterId)

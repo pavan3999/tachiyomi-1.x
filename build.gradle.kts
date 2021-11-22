@@ -5,7 +5,7 @@ buildscript {
     maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
   }
   dependencies {
-    classpath("com.android.tools.build:gradle:7.0.2")
+    classpath("com.android.tools.build:gradle:7.0.3")
     classpath(Deps.kotlin.plugin)
     classpath(Deps.kotlin.serialization.plugin)
     classpath(Deps.androidx.compose.plugin)
@@ -54,7 +54,7 @@ subprojects {
           optIn("kotlinx.coroutines.ObsoleteCoroutinesApi")
           optIn("kotlinx.serialization.ExperimentalSerializationApi")
           optIn("androidx.compose.foundation.ExperimentalFoundationApi")
-          optIn("okio.ExperimentalFileSystem")
+          optIn("com.google.accompanist.pager.ExperimentalPagerApi")
           optIn("io.ktor.util.InternalAPI")
         }
       }
@@ -75,8 +75,8 @@ subprojects {
       }
       compileOptions {
         isCoreLibraryDesugaringEnabled = true
-        sourceCompatibility(JavaVersion.VERSION_1_8)
-        targetCompatibility(JavaVersion.VERSION_1_8)
+        sourceCompatibility(JavaVersion.VERSION_11)
+        targetCompatibility(JavaVersion.VERSION_11)
       }
       sourceSets {
         named("main") {

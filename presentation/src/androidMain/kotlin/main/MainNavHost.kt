@@ -38,22 +38,28 @@ import androidx.compose.ui.graphics.vector.ImageVector
 import androidx.compose.ui.text.style.TextOverflow
 import androidx.navigation.NavGraph.Companion.findStartDestination
 import androidx.navigation.compose.currentBackStackEntryAsState
+import androidx.navigation.plusAssign
 import com.google.accompanist.insets.navigationBarsPadding
 import com.google.accompanist.navigation.animation.rememberAnimatedNavController
+import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
+import com.google.accompanist.navigation.material.ModalBottomSheetLayout
+import com.google.accompanist.navigation.material.rememberBottomSheetNavigator
 import dev.icerock.moko.resources.StringResource
 import tachiyomi.domain.ui.model.StartScreen
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.localize
-import tachiyomi.ui.core.theme.CustomColors
+import tachiyomi.ui.core.theme.AppColors
 
-@OptIn(ExperimentalAnimationApi::class)
+@OptIn(ExperimentalAnimationApi::class, ExperimentalMaterialNavigationApi::class)
 @Composable
 fun MainNavHost(startScreen: StartScreen) {
   val startRoute = startScreen.toRoute()
   val navController = rememberAnimatedNavController()
+  val bottomSheetNavigator = rememberBottomSheetNavigator()
+  navController.navigatorProvider += bottomSheetNavigator
+
   val currentScreen by navController.currentBackStackEntryAsState()
   val currentRoute = currentScreen?.destination?.route
-  val customColors = CustomColors.current
 
   val (requestedHideBottomNav, requestHideBottomNav) = remember { mutableStateOf(false) }
 
@@ -63,58 +69,60 @@ fun MainNavHost(startScreen: StartScreen) {
     }
   }
 
-  Scaffold(
-    modifier = Modifier
-      .background(customColors.bars)
-      .navigationBarsPadding(),
-    content = {
-      Box {
-        Navigation(
-          navController = navController,
-          startScreen = startRoute,
-          requestHideNavigator = requestHideBottomNav
-        )
-      }
-    },
-    bottomBar = {
-      val isVisible = TopLevelRoutes.isTopLevelRoute(currentRoute) && !requestedHideBottomNav
-      AnimatedVisibility(
-        visible = isVisible,
-        enter = slideInVertically(initialOffsetY = { it }),
-        exit = slideOutVertically(targetOffsetY = { it })
-      ) {
-        BottomNavigation(
-          backgroundColor = CustomColors.current.bars,
-          contentColor = CustomColors.current.onBars,
+  ModalBottomSheetLayout(bottomSheetNavigator) {
+    Scaffold(
+      modifier = Modifier
+        .background(AppColors.current.bars)
+        .navigationBarsPadding(),
+      content = {
+        Box {
+          Navigation(
+            navController = navController,
+            startScreen = startRoute,
+            requestHideNavigator = requestHideBottomNav
+          )
+        }
+      },
+      bottomBar = {
+        val isVisible = TopLevelRoutes.isTopLevelRoute(currentRoute) && !requestedHideBottomNav
+        AnimatedVisibility(
+          visible = isVisible,
+          enter = slideInVertically(initialOffsetY = { it }),
+          exit = slideOutVertically(targetOffsetY = { it })
         ) {
-          TopLevelRoutes.values.forEach {
-            val isSelected = currentRoute?.startsWith(it.screen.route) ?: false
-            BottomNavigationItem(
-              icon = {
-                Icon(
-                  if (isSelected) it.selectedIcon else it.unselectedIcon,
-                  contentDescription = null
-                )
-              },
-              label = {
-                Text(localize(it.text), maxLines = 1, overflow = TextOverflow.Ellipsis)
-              },
-              selected = isSelected,
-              onClick = {
-                navController.navigate(it.screen.route) {
-                  launchSingleTop = true
-                  restoreState = true
-                  popUpTo(navController.graph.findStartDestination().id) {
-                    saveState = true
+          BottomNavigation(
+            backgroundColor = AppColors.current.bars,
+            contentColor = AppColors.current.onBars,
+          ) {
+            TopLevelRoutes.values.forEach {
+              val isSelected = currentRoute?.startsWith(it.screen.route) ?: false
+              BottomNavigationItem(
+                icon = {
+                  Icon(
+                    if (isSelected) it.selectedIcon else it.unselectedIcon,
+                    contentDescription = null
+                  )
+                },
+                label = {
+                  Text(localize(it.text), maxLines = 1, overflow = TextOverflow.Ellipsis)
+                },
+                selected = isSelected,
+                onClick = {
+                  navController.navigate(it.screen.route) {
+                    launchSingleTop = true
+                    restoreState = true
+                    popUpTo(navController.graph.findStartDestination().id) {
+                      saveState = true
+                    }
                   }
-                }
-              },
-            )
+                },
+              )
+            }
           }
         }
       }
-    }
-  )
+    )
+  }
 }
 
 private enum class TopLevelRoutes(

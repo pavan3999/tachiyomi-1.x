@@ -26,6 +26,9 @@ sealed class LeafScreen(val route: String) {
   object Manga : LeafScreen("manga/{mangaId}") {
     fun createRoute(root: TopScreen, mangaId: Long) = "${root.route}/manga/$mangaId"
   }
+  object MangaTracking : LeafScreen("manga/{mangaId}/track") {
+    fun createRoute(root: TopScreen, mangaId: Long) = "${root.route}/manga/$mangaId/track"
+  }
 
   object Reader : LeafScreen("reader/{chapterId}") {
     fun createRoute(root: TopScreen, chapterId: Long) = "${root.route}/reader/$chapterId"

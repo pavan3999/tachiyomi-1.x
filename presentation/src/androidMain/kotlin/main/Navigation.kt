@@ -23,6 +23,8 @@ import androidx.navigation.navDeepLink
 import androidx.navigation.navigation
 import com.google.accompanist.navigation.animation.AnimatedNavHost
 import com.google.accompanist.navigation.animation.composable
+import com.google.accompanist.navigation.material.ExperimentalMaterialNavigationApi
+import com.google.accompanist.navigation.material.bottomSheet
 import tachiyomi.ui.browse.CatalogsScreen
 import tachiyomi.ui.browse.catalog.CatalogScreen
 import tachiyomi.ui.categories.CategoriesScreen
@@ -46,11 +48,13 @@ import tachiyomi.ui.more.settings.SettingsScreen
 import tachiyomi.ui.more.settings.SettingsSecurityScreen
 import tachiyomi.ui.more.settings.SettingsTrackingScreen
 import tachiyomi.ui.reader.ReaderScreen
+import tachiyomi.ui.track.TrackScreen
 import tachiyomi.ui.updates.UpdatesScreen
 import tachiyomi.ui.webview.WebViewScreen
 import java.net.URLDecoder
 import java.nio.charset.StandardCharsets
 
+@ExperimentalMaterialNavigationApi
 @ExperimentalAnimationApi
 @Composable
 internal fun Navigation(
@@ -75,6 +79,7 @@ internal fun Navigation(
   }
 }
 
+@ExperimentalMaterialNavigationApi
 @ExperimentalAnimationApi
 private fun NavGraphBuilder.addLibraryTopLevel(
   navController: NavController,
@@ -92,6 +97,7 @@ private fun NavGraphBuilder.addLibraryTopLevel(
   }
 }
 
+@ExperimentalMaterialNavigationApi
 @ExperimentalAnimationApi
 private fun NavGraphBuilder.addUpdatesTopLevel(
   navController: NavController
@@ -108,6 +114,7 @@ private fun NavGraphBuilder.addUpdatesTopLevel(
   }
 }
 
+@ExperimentalMaterialNavigationApi
 @ExperimentalAnimationApi
 private fun NavGraphBuilder.addHistoryTopLevel(
   navController: NavController
@@ -124,6 +131,7 @@ private fun NavGraphBuilder.addHistoryTopLevel(
   }
 }
 
+@ExperimentalMaterialNavigationApi
 @ExperimentalAnimationApi
 private fun NavGraphBuilder.addBrowseTopLevel(
   navController: NavController
@@ -248,6 +256,7 @@ private fun NavGraphBuilder.addMore(
   }
 }
 
+@ExperimentalMaterialNavigationApi
 @ExperimentalAnimationApi
 private fun NavGraphBuilder.addManga(
   navController: NavController,
@@ -266,9 +275,23 @@ private fun NavGraphBuilder.addManga(
       openChapter = { chapterId ->
         navController.navigate(LeafScreen.Reader.createRoute(root, chapterId))
       },
+      openTrack = {
+        navController.navigate(LeafScreen.MangaTracking.createRoute(root, mangaId))
+      },
       openWebView = { sourceId, url ->
         navController.navigate(LeafScreen.WebView.createRoute(root, sourceId, url))
       }
+    )
+  }
+  bottomSheet(
+    route = LeafScreen.MangaTracking.createRoute(root),
+    arguments = listOf(
+      navArgument("mangaId") { type = NavType.LongType }
+    )
+  ) { entry ->
+    val mangaId = entry.arguments?.getLong("mangaId") as Long
+    TrackScreen(
+      mangaId = mangaId
     )
   }
 }

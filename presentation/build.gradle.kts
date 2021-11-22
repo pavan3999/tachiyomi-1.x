@@ -9,20 +9,19 @@ plugins {
 
 kotlin {
   android()
-  jvm()
+  jvm("desktop")
 
   sourceSets {
     named("commonMain") {
       dependencies {
         implementation(project(Module.core))
         implementation(project(Module.uiCore))
+        implementation(project(Module.sourceApi))
+        implementation(project(Module.domain))
         compileOnly(compose.preview)
       }
     }
-    named("jvmMain") {
-    }
     named("androidMain") {
-      kotlin.srcDir("src/sharedJvmMain/kotlin")
       dependencies {
         implementation(Deps.androidx.browser)
         implementation(Deps.androidx.webkit)
@@ -36,6 +35,7 @@ kotlin {
         implementation(Deps.accompanist.systemUiController)
         implementation(Deps.accompanist.swipeRefresh)
         implementation(Deps.accompanist.navAnimation)
+        implementation(Deps.accompanist.navMaterial)
 
         implementation(Deps.coil.core)
         implementation(Deps.coil.compose)
@@ -43,19 +43,13 @@ kotlin {
         implementation(Deps.aboutLibraries.core)
       }
     }
-    listOf("jvmMain", "androidMain").forEach {
-      getByName(it) {
-        dependencies {
-          implementation(project(Module.sourceApi))
-          implementation(project(Module.domain))
-          implementation(Deps.toothpick.runtime)
-        }
-        project.dependencies.apply {
-          add("kapt", Deps.toothpick.compiler)
-        }
-      }
+    named("desktopMain") {
     }
   }
+}
+
+dependencies {
+  add("kapt", Deps.toothpick.compiler)
 }
 
 idea {
@@ -64,9 +58,8 @@ idea {
       (this as ExtensionAware).configure<org.jetbrains.gradle.ext.PackagePrefixContainer> {
         arrayOf(
           "src/commonMain/kotlin",
-          "src/jvmMain/kotlin",
           "src/androidMain/kotlin",
-          "src/sharedJvmMain/kotlin"
+          "src/desktopMain/kotlin"
         ).forEach { put(it, "tachiyomi.ui") }
       }
     }

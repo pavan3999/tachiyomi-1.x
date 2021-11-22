@@ -30,6 +30,7 @@ import tachiyomi.core.io.saveTo
 import tachiyomi.domain.catalog.interactor.GetLocalCatalog
 import tachiyomi.domain.library.service.LibraryCovers
 import tachiyomi.source.HttpSource
+import tachiyomi.ui.core.manga.MangaCover
 import java.io.File
 
 internal class LibraryMangaFetcher(

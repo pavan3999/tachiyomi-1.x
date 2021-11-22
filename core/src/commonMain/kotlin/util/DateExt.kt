@@ -9,5 +9,12 @@
 package tachiyomi.core.util
 
 import kotlinx.datetime.LocalDate
+import kotlinx.datetime.LocalDateTime
+
+// These should be removed when we have formatters in kotlin-datetime
 
 expect fun LocalDate.asRelativeTimeString(): String
+
+expect class DateTimeFormatter(pattern: String)
+
+expect fun LocalDateTime.format(formatter: DateTimeFormatter): String
