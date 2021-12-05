@@ -18,6 +18,7 @@ kotlin {
         implementation(project(Module.uiCore))
         implementation(project(Module.sourceApi))
         implementation(project(Module.domain))
+        implementation(Deps.aboutLibraries.compose)
         compileOnly(compose.preview)
       }
     }
@@ -39,8 +40,6 @@ kotlin {
 
         implementation(Deps.coil.core)
         implementation(Deps.coil.compose)
-
-        implementation(Deps.aboutLibraries.core)
       }
     }
     named("desktopMain") {

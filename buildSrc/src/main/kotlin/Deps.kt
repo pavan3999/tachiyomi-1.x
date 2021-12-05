@@ -113,9 +113,9 @@ object Deps {
   }
 
   object aboutLibraries {
-    private const val version = "8.9.1"
+    private const val version = "10.0.0-b02"
     const val plugin = "com.mikepenz.aboutlibraries.plugin:aboutlibraries-plugin:$version"
-    const val core = "com.mikepenz:aboutlibraries-core:$version"
+    const val compose = "com.mikepenz:aboutlibraries-compose:$version"
   }
 
   const val desugarJdkLibs = "com.android.tools:desugar_jdk_libs:1.1.5"

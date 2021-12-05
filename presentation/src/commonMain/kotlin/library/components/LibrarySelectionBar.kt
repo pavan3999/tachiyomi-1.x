@@ -20,14 +20,12 @@ import androidx.compose.material.Icon
 import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
 import androidx.compose.material.Surface
-import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.Icons.Outlined
-import androidx.compose.material.icons.Icons.TwoTone
-import androidx.compose.material.icons.filled.Check
-import androidx.compose.material.icons.outlined.Check
 import androidx.compose.material.icons.outlined.Delete
+import androidx.compose.material.icons.outlined.Done
+import androidx.compose.material.icons.outlined.DoneOutline
+import androidx.compose.material.icons.outlined.Download
 import androidx.compose.material.icons.outlined.Label
-import androidx.compose.material.icons.twotone.FileDownload
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.unit.dp
@@ -68,14 +66,13 @@ fun LibrarySelectionBar(
           Icon(Outlined.Label, contentDescription = null)
         }
         IconButton(onClick = onClickDownload) {
-          Icon(TwoTone.FileDownload, contentDescription = null)
+          Icon(Outlined.Download, contentDescription = null)
         }
         IconButton(onClick = onClickMarkAsRead) {
-          Icon(Icons.Default.Check, contentDescription = null)
+          Icon(Outlined.Done, contentDescription = null)
         }
-        // TODO(inorichi): outlined check is not really outlined, we'll need to add a custom icon
         IconButton(onClick = onClickMarkAsUnread) {
-          Icon(Outlined.Check, contentDescription = null)
+          Icon(Outlined.DoneOutline, contentDescription = null)
         }
         IconButton(onClick = onClickDeleteDownloads) {
           Icon(Outlined.Delete, contentDescription = null)
