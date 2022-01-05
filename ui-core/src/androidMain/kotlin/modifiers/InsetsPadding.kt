@@ -18,6 +18,20 @@ import com.google.accompanist.insets.statusBarsPadding
 actual fun Modifier.statusBarsPadding() = statusBarsPadding()
 
 @Composable
+actual fun rememberStatusBarInsetsPaddingValues(
+  additionalStart: Dp,
+  additionalTop: Dp,
+  additionalEnd: Dp,
+  additionalBottom: Dp
+) = rememberInsetsPaddingValues(
+  insets = LocalWindowInsets.current.statusBars,
+  additionalStart = additionalStart,
+  additionalTop = additionalTop,
+  additionalEnd = additionalEnd,
+  additionalBottom = additionalBottom
+)
+
+@Composable
 actual fun rememberNavigationBarsInsetsPaddingValues(
   additionalStart: Dp,
   additionalTop: Dp,
@@ -30,3 +44,4 @@ actual fun rememberNavigationBarsInsetsPaddingValues(
   additionalEnd = additionalEnd,
   additionalBottom = additionalBottom
 )
+

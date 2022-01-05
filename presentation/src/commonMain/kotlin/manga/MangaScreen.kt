@@ -9,10 +9,20 @@
 package tachiyomi.ui.manga
 
 import androidx.compose.foundation.layout.Column
+import androidx.compose.foundation.layout.PaddingValues
 import androidx.compose.foundation.layout.fillMaxSize
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.foundation.lazy.items
+import androidx.compose.material.Icon
+import androidx.compose.material.IconButton
 import androidx.compose.material.MaterialTheme
+import androidx.compose.material.Scaffold
+import androidx.compose.material.icons.Icons
+import androidx.compose.material.icons.filled.ArrowBack
+import androidx.compose.material.icons.filled.Category
+import androidx.compose.material.icons.filled.Download
+import androidx.compose.material.icons.filled.Share
+import androidx.compose.material.icons.filled.TravelExplore
 import androidx.compose.runtime.Composable
 import androidx.compose.ui.Modifier
 import androidx.compose.ui.graphics.Color
@@ -20,9 +30,13 @@ import androidx.compose.ui.unit.dp
 import tachiyomi.ui.core.components.BackIconButton
 import tachiyomi.ui.core.components.LoadingScreen
 import tachiyomi.ui.core.components.SwipeRefresh
+import tachiyomi.ui.core.components.SwipeRefreshIndicator
 import tachiyomi.ui.core.components.Toolbar
 import tachiyomi.ui.core.components.TransparentStatusBar
 import tachiyomi.ui.core.components.rememberSwipeRefreshState
+import tachiyomi.ui.core.modifiers.rememberNavigationBarsInsetsPaddingValues
+import tachiyomi.ui.core.modifiers.rememberStatusBarInsetsPaddingValues
+import tachiyomi.ui.core.modifiers.statusBarsPadding
 import tachiyomi.ui.core.viewmodel.viewModel
 import java.net.URLEncoder
 import java.nio.charset.StandardCharsets
@@ -57,10 +71,22 @@ fun MangaScreen(
     return
   }
 
+  val statusBarInsets = rememberStatusBarInsetsPaddingValues()
+  val navigationBarInsets = rememberNavigationBarsInsetsPaddingValues(
+    additionalBottom = statusBarInsets.calculateTopPadding()
+  )
+
   TransparentStatusBar {
     SwipeRefresh(
       state = rememberSwipeRefreshState(vm.isRefreshing),
-      onRefresh = { vm.updateManga(metadata = true, chapters = true, tracking = true) }
+      onRefresh = { vm.updateManga(metadata = true, chapters = true, tracking = true) },
+      indicator = { state, refreshTrigger ->
+        SwipeRefreshIndicator(
+          state = state,
+          refreshTriggerDistance = refreshTrigger,
+          refreshingOffset = navigationBarInsets.calculateBottomPadding()
+        )
+      }
     ) {
       LazyColumn(modifier = Modifier.fillMaxSize()) {
         item {

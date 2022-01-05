@@ -17,6 +17,14 @@ import androidx.compose.ui.unit.dp
 expect fun Modifier.statusBarsPadding(): Modifier
 
 @Composable
+expect fun rememberStatusBarInsetsPaddingValues(
+  additionalStart: Dp = 0.dp,
+  additionalTop: Dp = 0.dp,
+  additionalEnd: Dp = 0.dp,
+  additionalBottom: Dp = 0.dp,
+): PaddingValues
+
+@Composable
 expect fun rememberNavigationBarsInsetsPaddingValues(
   additionalStart: Dp = 0.dp,
   additionalTop: Dp = 0.dp,

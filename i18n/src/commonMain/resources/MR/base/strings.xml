@@ -16,6 +16,8 @@
   <string name="action_delete">Delete</string>
   <string name="action_yes">Yes</string>
   <string name="action_no">No</string>
+  <string name="action_edit_categories">Edit categories</string>
+  <string name="action_migrate">Migrate</string>
 
   <string name="lang_all">All</string>
   <string name="lang_others">Others</string>
@@ -39,6 +41,12 @@
   <string name="action_more">More</string>
   <string name="action_less">Less</string>
   <string name="page_progress_num">Page %d</string>
+  <string name="download_one">Next chapter</string>
+  <string name="download_five">Next 5 chapters</string>
+  <string name="download_ten">Next 10 chapters</string>
+  <string name="download_custom">Custom</string>
+  <string name="download_unread">Unread</string>
+  <string name="download_all">All</string>
 
   <!-- Updates screen -->
   <string name="updates_subtitle">Ch. %1$.1f - %2$s</string>

@@ -42,12 +42,9 @@ jobs:
           cp .github/runner-files/ci-gradle.properties ~/.gradle/gradle.properties
 
       - name: Build and test app
-        uses: eskatos/gradle-command-action@v1
+        uses: gradle/gradle-command-action@v2
         with:
           arguments: assembleDebug
-          wrapper-cache-enabled: true
-          dependencies-cache-enabled: true
-          configuration-cache-enabled: true
 
       - name: Create Release
         uses: actions/upload-artifact@v2
