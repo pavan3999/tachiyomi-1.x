@@ -22,24 +22,24 @@ kotlin {
     }
     named("androidMain") {
       dependencies {
-        implementation(Deps.androidx.core)
-        implementation(Deps.androidx.emoji)
-        implementation(Deps.androidx.appCompat)
-        implementation(Deps.androidx.compose.activity)
-        implementation(Deps.toothpick.smoothie)
-        implementation(Deps.tinylog.impl)
+        implementation(androidx.core)
+        implementation(androidx.emoji)
+        implementation(androidx.appCompat)
+        implementation(androidx.compose.activity)
+        implementation(libs.toothpick.smoothie)
+        implementation(libs.tinylog.impl)
       }
     }
     named("desktopMain") {
       dependencies {
-        implementation(Deps.tinylog.impl)
+        implementation(libs.tinylog.impl)
       }
     }
   }
 }
 
 dependencies {
-  add("kapt", Deps.toothpick.compiler)
+  add("kapt", libs.toothpick.compiler)
 }
 
 android {

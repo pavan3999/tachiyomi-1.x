@@ -19,7 +19,7 @@ kotlin {
       dependencies {
         implementation(project(Module.core))
         implementation(project(Module.sourceApi))
-        implementation(Deps.kotlin.serialization.protobuf)
+        implementation(kotlinx.serialization.protobuf)
       }
     }
     named("jvmMain") {
@@ -28,18 +28,17 @@ kotlin {
     }
     named("jvmTest") {
       dependencies {
-        implementation(Deps.kotlin.reflect)
-        implementation(Deps.mockk)
-        implementation(Deps.toothpick.testing)
-        implementation(Deps.kotest.framework)
-        implementation(Deps.kotest.assertions)
+        implementation(kotlinx.reflect)
+        implementation(libs.mockk)
+        implementation(libs.toothpick.testing)
+        implementation(libs.bundles.kotest)
       }
     }
   }
 }
 
 dependencies {
-  add("kapt", Deps.toothpick.compiler)
+  add("kapt", libs.toothpick.compiler)
 }
 
 val jacocoTestReport by tasks.creating(JacocoReport::class.java) {

@@ -10,6 +10,11 @@ package tachiyomi.ui.library
 
 import androidx.compose.runtime.getValue
 import androidx.compose.runtime.setValue
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import library.interactor.SetDisplayModeForCategory
+import tachiyomi.core.util.IO
+import tachiyomi.domain.library.model.Category
 import tachiyomi.domain.library.model.DisplayMode
 import tachiyomi.domain.library.model.LibraryFilter
 import tachiyomi.domain.library.model.LibraryFilter.Value.*
@@ -19,16 +24,14 @@ import tachiyomi.ui.core.viewmodel.BaseViewModel
 import javax.inject.Inject
 
 class LibrarySheetViewModel @Inject constructor(
-  libraryPreferences: LibraryPreferences
+  libraryPreferences: LibraryPreferences,
+  private val setDisplayModeForCategory: SetDisplayModeForCategory
 ) : BaseViewModel() {
 
   var filters by libraryPreferences.filters(includeAll = true).asState()
     private set
 
   var sorting by libraryPreferences.sorting().asState()
-    private set
-
-  var displayMode by libraryPreferences.displayMode().asState()
     private set
 
   var downloadBadges by libraryPreferences.downloadBadges().asState()
@@ -80,8 +83,10 @@ class LibrarySheetViewModel @Inject constructor(
     }
   }
 
-  fun changeDisplayMode(mode: DisplayMode) {
-    displayMode = mode
+  fun changeDisplayMode(category: Category, displayMode: DisplayMode) {
+    scope.launch(Dispatchers.IO) {
+      setDisplayModeForCategory.await(category, displayMode)
+    }
   }
 
   fun toggleDownloadBadges() {

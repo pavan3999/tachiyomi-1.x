@@ -35,6 +35,7 @@ import tachiyomi.domain.backup.model.TrackProto
 import tachiyomi.domain.library.model.Category
 import tachiyomi.domain.library.model.MangaCategory
 import tachiyomi.domain.library.service.CategoryRepository
+import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.library.service.MangaCategoryRepository
 import tachiyomi.domain.manga.model.Chapter
 import tachiyomi.domain.manga.model.Manga
@@ -54,10 +55,11 @@ class RestoreBackupTest : StringSpec({
   val chapterRepository = mockk<ChapterRepository>(relaxed = true)
   val trackRepository = mockk<TrackRepository>(relaxed = true)
   val mangaCategoryRepository = mockk<MangaCategoryRepository>(relaxed = true)
+  val libraryPreferences = mockk<LibraryPreferences>(relaxed = true)
   val transactions = mockk<Transactions>(relaxed = true)
   val interactor = RestoreBackup(
     fileSystem, mangaRepository, categoryRepository, chapterRepository, trackRepository,
-    mangaCategoryRepository, transactions
+    mangaCategoryRepository, libraryPreferences, transactions
   )
   afterTest { clearAllMocks() }
 

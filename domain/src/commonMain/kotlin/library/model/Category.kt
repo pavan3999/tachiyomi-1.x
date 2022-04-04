@@ -12,7 +12,8 @@ data class Category(
   val id: Long = 0,
   val name: String = "",
   val order: Int = 0,
-  val updateInterval: Int = 0
+  val updateInterval: Int = 0,
+  val flags: Long = 0
 ) {
 
   val isUncategorized get() = id == UNCATEGORIZED_ID

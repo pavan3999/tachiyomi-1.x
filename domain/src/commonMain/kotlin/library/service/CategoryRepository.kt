@@ -39,4 +39,6 @@ interface CategoryRepository {
 
   suspend fun delete(categoryIds: Collection<Long>)
 
+  suspend fun updateAllFlags(flags: Long?)
+
 }

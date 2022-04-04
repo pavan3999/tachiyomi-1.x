@@ -17,7 +17,9 @@ import androidx.compose.runtime.remember
 import androidx.compose.runtime.rememberCoroutineScope
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.flow.StateFlow
+import tachiyomi.domain.library.model.CategoryWithCount
 import tachiyomi.domain.library.model.DisplayMode
+import tachiyomi.domain.library.model.DisplayMode.Companion.displayMode
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.ui.core.components.HorizontalPager
 import tachiyomi.ui.core.components.PagerState
@@ -27,26 +29,26 @@ import tachiyomi.ui.core.providers.LocalWindow
 fun LibraryPager(
   state: PagerState,
   pageCount: Int,
-  displayMode: DisplayMode,
+  categories: List<CategoryWithCount>,
   selectedManga: List<Long>,
   getColumnsForOrientation: CoroutineScope.(Boolean) -> StateFlow<Int>,
   getLibraryForPage: @Composable (Int) -> State<List<LibraryManga>>,
   onClickManga: (LibraryManga) -> Unit,
   onLongClickManga: (LibraryManga) -> Unit
 ) {
-  val columns by if (displayMode != DisplayMode.List) {
-    val window = LocalWindow.current
-    val isLandscape = window.screenWidthDp > window.screenHeightDp
-
-    with(rememberCoroutineScope()) {
-      remember(isLandscape) { getColumnsForOrientation(isLandscape) }.collectAsState()
-    }
-  } else {
-    remember { mutableStateOf(0) }
-  }
-
   HorizontalPager(count = pageCount, state = state) { page ->
     val library by getLibraryForPage(page)
+    val displayMode = categories[page].category.displayMode
+    val columns by if (displayMode != DisplayMode.List) {
+      val window = LocalWindow.current
+      val isLandscape = window.screenWidthDp > window.screenHeightDp
+
+      with(rememberCoroutineScope()) {
+        remember(isLandscape) { getColumnsForOrientation(isLandscape) }.collectAsState()
+      }
+    } else {
+      remember { mutableStateOf(0) }
+    }
     when (displayMode) {
       DisplayMode.CompactGrid -> LibraryMangaCompactGrid(
         library = library,

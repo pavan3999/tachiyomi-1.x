@@ -23,7 +23,7 @@ class BackupMappersTest : StringSpec({
   "should fail when domain models are updated to maybe add new backup fields" {
     Manga::class.constructors.first().parameters shouldHaveSize 17
     Chapter::class.constructors.first().parameters shouldHaveSize 12
-    Category::class.constructors.first().parameters shouldHaveSize 4
+    Category::class.constructors.first().parameters shouldHaveSize 5
     Track::class.constructors.first().parameters shouldHaveSize 13
   }
 
@@ -77,7 +77,8 @@ class BackupMappersTest : StringSpec({
       id = 0, // Must be 0 because the mapper doesn't save this
       name = "test name",
       order = 2,
-      updateInterval = 3
+      updateInterval = 3,
+      flags = 2
     )
 
     val restoredCategory = CategoryProto.fromDomain(category).toDomain()

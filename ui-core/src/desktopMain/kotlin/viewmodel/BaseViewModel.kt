@@ -36,6 +36,13 @@ actual abstract class BaseViewModel {
 
   actual fun <T> Preference<T>.asState() = PreferenceMutableState(this, scope)
 
+  actual fun <T> Preference<T>.asState(onChange: (T) -> Unit): PreferenceMutableState<T> {
+    this.changes()
+      .onEach { onChange(it) }
+      .launchIn(scope)
+    return PreferenceMutableState(this, scope)
+  }
+
   actual fun <T> Flow<T>.asState(initialValue: T): State<T> {
     val state = mutableStateOf(initialValue)
     scope.launch {

@@ -11,12 +11,12 @@ package tachiyomi.data.library
 import tachiyomi.domain.library.model.Category
 import tachiyomi.domain.library.model.CategoryWithCount
 
-internal val categoryMapper = { id: Long, name: String, order: Int, updateInterval: Int ->
-  Category(id, name, order, updateInterval)
-}
+internal val categoryMapper =
+  { id: Long, name: String, order: Int, updateInterval: Int, flags: Long ->
+    Category(id, name, order, updateInterval, flags)
+  }
 
 internal val categoryWithCountMapper =
-  { id: Long, name: String, order: Int, updateInterval: Int, count: Long ->
-
-    CategoryWithCount(Category(id, name, order, updateInterval), count.toInt())
+  { id: Long, name: String, order: Int, updateInterval: Int, flags: Long, count: Long ->
+    CategoryWithCount(Category(id, name, order, updateInterval, flags), count.toInt())
   }

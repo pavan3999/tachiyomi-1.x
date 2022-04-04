@@ -2,12 +2,13 @@ CREATE TABLE IF NOT EXISTS category (
   id INTEGER NOT NULL PRIMARY KEY AUTOINCREMENT,
   name TEXT NOT NULL DEFAULT "",
   sort INTEGER AS Int NOT NULL DEFAULT 0,
-  updateInterval INTEGER AS Int NOT NULL DEFAULT 0
+  updateInterval INTEGER AS Int NOT NULL DEFAULT 0,
+  flags INTEGER NOT NULL DEFAULT 0
 );
 
 -- Insert uncategorized and all tables
-INSERT OR IGNORE INTO category VALUES (0, "", 0, 0);
-INSERT OR IGNORE INTO category VALUES (-2, "", 0, 0);
+INSERT OR IGNORE INTO category VALUES (0, "", 0, 0, 0);
+INSERT OR IGNORE INTO category VALUES (-2, "", 0, 0, 0);
 CREATE TRIGGER IF NOT EXISTS system_categories_deletion_trigger BEFORE DELETE ON category
 BEGIN SELECT CASE
   WHEN old.id <= 0 THEN
@@ -59,14 +60,19 @@ WHERE category.id = 0
 ORDER BY sort;
 
 insert:
-INSERT INTO category VALUES (NULL, ?, ?, ?);
+INSERT INTO category VALUES (NULL, ?, ?, ?, ?);
 
 update:
 UPDATE category SET
   name = coalesce(?, name),
   sort = coalesce(?, sort),
-  updateInterval = coalesce(?, updateInterval)
+  updateInterval = coalesce(?, updateInterval),
+  flags = coalesce(?, flags)
 WHERE id = ?;
+
+updateAllFlags:
+UPDATE category SET
+flags = coalesce(?, flags);
 
 deleteById:
 DELETE FROM category WHERE id = ?;

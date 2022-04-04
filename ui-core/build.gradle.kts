@@ -21,14 +21,14 @@ kotlin {
     }
     named("androidMain") {
       dependencies {
-        implementation(Deps.androidx.emoji)
-        implementation(Deps.androidx.lifecycle.viewModel)
-        implementation(Deps.androidx.compose.activity)
-        implementation(Deps.accompanist.insets)
-        implementation(Deps.accompanist.swipeRefresh)
-        implementation(Deps.accompanist.pager)
-        implementation(Deps.accompanist.pagerIndicator)
-        implementation(Deps.coil.compose)
+        implementation(androidx.emoji)
+        implementation(androidx.lifecycle.viewModel)
+        implementation(androidx.compose.activity)
+        implementation(accompanist.insets)
+        implementation(accompanist.swipeRefresh)
+        implementation(accompanist.pager)
+        implementation(accompanist.pagerIndicator)
+        implementation(libs.coil.compose)
       }
     }
     named("desktopMain") {

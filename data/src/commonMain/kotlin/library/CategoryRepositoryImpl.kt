@@ -83,11 +83,18 @@ internal class CategoryRepositoryImpl @Inject constructor(
     }
   }
 
+  override suspend fun updateAllFlags(flags: Long?) {
+    handler.await {
+      categoryQueries.updateAllFlags(flags)
+    }
+  }
+
   private fun Database.insertBlocking(category: Category) {
     categoryQueries.insert(
       name = category.name,
       sort = category.order,
-      updateInterval = category.updateInterval
+      updateInterval = category.updateInterval,
+      flags = category.flags
     )
   }
 
@@ -96,7 +103,8 @@ internal class CategoryRepositoryImpl @Inject constructor(
       update.name,
       update.order?.toLong(),
       update.updateInterval?.toLong(),
-      id = update.id
+      update.flags,
+      id = update.id,
     )
   }
 

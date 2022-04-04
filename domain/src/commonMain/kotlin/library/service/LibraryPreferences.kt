@@ -47,8 +47,12 @@ class LibraryPreferences(private val preferenceStore: PreferenceStore) {
     return preferenceStore.getLong("default_category", Category.UNCATEGORIZED_ID)
   }
 
-  fun displayMode(): Preference<DisplayMode> {
-    return preferenceStore.getEnum("display_mode", DisplayMode.CompactGrid)
+  fun categoryFlags(): Preference<Long> {
+    return preferenceStore.getLong("category_flags", 0L)
+  }
+
+  fun perCategorySettings(): Preference<Boolean> {
+    return preferenceStore.getBoolean("per_category_settings", false)
   }
 
   fun downloadBadges(): Preference<Boolean> {

@@ -17,33 +17,33 @@ kotlin {
         implementation(project(Module.core))
         implementation(project(Module.domain))
         implementation(project(Module.sourceApi))
-        implementation(Deps.sqldelight.runtime)
-        implementation(Deps.sqldelight.coroutines)
+        implementation(libs.sqldelight.runtime)
+        implementation(libs.sqldelight.coroutines)
       }
     }
     named("androidMain") {
       kotlin.srcDir("src/jvmMain/kotlin")
       dependencies {
-        implementation(Deps.sqldelight.android)
-        implementation(Deps.requerySqlite)
-        implementation(Deps.androidx.workManager.runtime)
+        implementation(libs.sqldelight.android)
+        implementation(libs.requerySqlite)
+        implementation(androidx.work.runtime)
       }
       project.dependencies {
-        compileOnly(Deps.androidSqlite)
-        debugImplementation(Deps.androidSqlite)
+        compileOnly(libs.androidSqlite)
+        debugImplementation(libs.androidSqlite)
       }
     }
     named("desktopMain") {
       kotlin.srcDir("src/jvmMain/kotlin")
       dependencies {
-        implementation(Deps.sqldelight.jvm)
+        implementation(libs.sqldelight.jvm)
       }
     }
   }
 }
 
 dependencies {
-  add("kapt", Deps.toothpick.compiler)
+  add("kapt", libs.toothpick.compiler)
 }
 
 sqldelight {

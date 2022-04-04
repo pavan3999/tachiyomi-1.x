@@ -17,12 +17,14 @@ import androidx.compose.runtime.LaunchedEffect
 import androidx.compose.runtime.remember
 import androidx.compose.runtime.snapshotFlow
 import kotlinx.coroutines.flow.collect
+import tachiyomi.domain.library.model.Category
 
 @OptIn(ExperimentalMaterialApi::class)
 @Composable
 fun LibrarySheetLayout(
   showSheet: Boolean,
   currentPage: Int,
+  currentCategory: Category?,
   onSheetDismissed: () -> Unit,
   onPageChanged: (Int) -> Unit,
   content: @Composable () -> Unit
@@ -45,7 +47,7 @@ fun LibrarySheetLayout(
 
   ModalBottomSheetLayout(
     sheetState = sheetState,
-    sheetContent = { LibrarySheet(currentPage, onPageChanged) },
+    sheetContent = { LibrarySheet(currentPage, currentCategory, onPageChanged) },
     content = content
   )
 }

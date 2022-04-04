@@ -8,7 +8,6 @@
 
 package tachiyomi.ui.library
 
-import androidx.compose.material.ExperimentalMaterialApi
 import androidx.compose.runtime.Composable
 import androidx.compose.runtime.State
 import androidx.compose.runtime.collectAsState
@@ -46,7 +45,6 @@ class LibraryViewModel @Inject constructor(
   var lastUsedCategory by libraryPreferences.lastUsedCategory().asState()
   val filters by libraryPreferences.filters().asState()
   val sorting by libraryPreferences.sorting().asState()
-  val displayMode by libraryPreferences.displayMode().asState()
   val showCategoryTabs by libraryPreferences.showCategoryTabs().asState()
   val showCountInCategory by libraryPreferences.showCountInCategory().asState()
 

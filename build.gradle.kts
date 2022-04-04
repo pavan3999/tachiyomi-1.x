@@ -1,32 +1,18 @@
 buildscript {
-  repositories {
-    google()
-    mavenCentral()
-    maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
-  }
   dependencies {
-    classpath("com.android.tools.build:gradle:7.0.4")
-    classpath(Deps.kotlin.plugin)
-    classpath(Deps.kotlin.serialization.plugin)
-    classpath(Deps.androidx.compose.plugin)
-    classpath(Deps.aboutLibraries.plugin)
-    classpath(Deps.moko.plugin)
-    classpath(Deps.sqldelight.plugin)
+    classpath(androidx.agp)
+    classpath(kotlinx.gradle)
+    classpath(kotlinx.serialization.gradle)
+    classpath(androidx.compose.gradle)
+    classpath(libs.aboutLibraries.gradle)
+    classpath(libs.moko.gradle)
+    classpath(libs.sqldelight.gradle)
   }
 }
 
 plugins {
-  id("com.github.ben-manes.versions") version "0.39.0"
-  id("org.jetbrains.gradle.plugin.idea-ext") version "1.1"
-}
-
-allprojects {
-  repositories {
-    mavenCentral()
-    google()
-    maven("https://maven.pkg.jetbrains.space/public/p/compose/dev")
-    maven { setUrl("https://jitpack.io") }
-  }
+  alias(libs.plugins.gradleVersions)
+  alias(libs.plugins.ideaExt)
 }
 
 subprojects {
@@ -87,7 +73,7 @@ subprojects {
         }
       }
       dependencies {
-        add("coreLibraryDesugaring", Deps.desugarJdkLibs)
+        add("coreLibraryDesugaring", libs.desugarJdkLibs)
       }
     }
   }
@@ -108,6 +94,6 @@ subprojects {
   }
 }
 
-tasks.register("clean", Delete::class) {
+tasks.register<Delete>("clean") {
   delete(rootProject.buildDir)
 }

@@ -47,7 +47,9 @@ import androidx.compose.ui.state.ToggleableState
 import androidx.compose.ui.unit.dp
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
+import tachiyomi.domain.library.model.Category
 import tachiyomi.domain.library.model.DisplayMode
+import tachiyomi.domain.library.model.DisplayMode.Companion.displayMode
 import tachiyomi.domain.library.model.LibraryFilter
 import tachiyomi.domain.library.model.LibraryFilter.Value.*
 import tachiyomi.domain.library.model.LibrarySort
@@ -68,6 +70,7 @@ import kotlin.math.round
 @Composable
 fun LibrarySheet(
   currentPage: Int,
+  currentCategory: Category?,
   onPageChanged: (Int) -> Unit
 ) {
   val vm = viewModel<LibrarySheetViewModel>()
@@ -114,14 +117,21 @@ fun LibrarySheet(
             }
 
           DisplayPage(
-            displayMode = vm.displayMode,
+            displayMode = currentCategory?.displayMode ?: DisplayMode.CompactGrid,
             columns = columns,
             downloadBadges = vm.downloadBadges,
             unreadBadges = vm.unreadBadges,
             categoryTabs = vm.showCategoryTabs,
             allCategory = vm.showAllCategory,
             countInCategory = vm.showCountInCategory,
-            onClickDisplayMode = vm::changeDisplayMode,
+            onClickDisplayMode = { displayMode ->
+              currentCategory?.let { category ->
+                vm.changeDisplayMode(
+                  category,
+                  displayMode
+                )
+              }
+            },
             onChangeColumns = setColumns,
             onClickDownloadBadges = vm::toggleDownloadBadges,
             onClickUnreadBadges = vm::toggleUnreadBadges,

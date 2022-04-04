@@ -15,3 +15,24 @@ pluginManagement {
     google()
   }
 }
+
+dependencyResolutionManagement {
+  repositoriesMode.set(RepositoriesMode.FAIL_ON_PROJECT_REPOS)
+  repositories {
+    mavenCentral()
+    google()
+    maven(url = "https://maven.pkg.jetbrains.space/public/p/compose/dev")
+    maven(url = "https://jitpack.io")
+  }
+  versionCatalogs {
+    create("kotlinx") {
+      from(files("gradle/kotlinx.versions.toml"))
+    }
+    create("androidx") {
+      from(files("gradle/androidx.versions.toml"))
+    }
+    create("accompanist") {
+      from(files("gradle/accompanist.versions.toml"))
+    }
+  }
+}

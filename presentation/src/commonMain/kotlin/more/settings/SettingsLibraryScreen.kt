@@ -12,7 +12,11 @@ import androidx.compose.foundation.layout.Column
 import androidx.compose.foundation.lazy.LazyColumn
 import androidx.compose.material.Text
 import androidx.compose.runtime.Composable
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.launch
+import library.interactor.ResetCategoryFlags
 import tachiyomi.core.di.Inject
+import tachiyomi.core.util.IO
 import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.i18n.MR
 import tachiyomi.i18n.localize
@@ -23,10 +27,20 @@ import tachiyomi.ui.core.viewmodel.BaseViewModel
 import tachiyomi.ui.core.viewmodel.viewModel
 
 class SettingsLibraryViewModel @Inject constructor(
-  libraryPreferences: LibraryPreferences
+  libraryPreferences: LibraryPreferences,
+  resetCategoryFlags: ResetCategoryFlags
 ) : BaseViewModel() {
 
   val showAllCategory = libraryPreferences.showAllCategory().asState()
+
+  val perCategorySettings = libraryPreferences.perCategorySettings()
+    .asState { isPerCategorySettings ->
+      if (!isPerCategorySettings) {
+        scope.launch(Dispatchers.IO) {
+          resetCategoryFlags.await()
+        }
+      }
+    }
 }
 
 @Composable
@@ -43,6 +57,9 @@ fun SettingsLibraryScreen(
     LazyColumn {
       item {
         SwitchPreference(preference = vm.showAllCategory, title = "Show all category")
+      }
+      item {
+        SwitchPreference(preference = vm.perCategorySettings, title = "Per category settings")
       }
     }
   }

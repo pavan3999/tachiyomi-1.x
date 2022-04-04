@@ -27,7 +27,7 @@ class BackupProtoTest : FunSpec({
   test("should fail when proto models are updated to check this test") {
     MangaProto::class.constructors.first().parameters shouldHaveSize 20
     ChapterProto::class.constructors.first().parameters shouldHaveSize 12
-    CategoryProto::class.constructors.first().parameters shouldHaveSize 5
+    CategoryProto::class.constructors.first().parameters shouldHaveSize 6
     TrackProto::class.constructors.first().parameters shouldHaveSize 13
   }
 

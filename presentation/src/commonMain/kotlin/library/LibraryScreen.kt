@@ -37,6 +37,7 @@ fun LibraryScreen(
   LibrarySheetLayout(
     showSheet = vm.showSheet,
     currentPage = vm.sheetPage,
+    currentCategory = vm.selectedCategory?.category,
     onSheetDismissed = { vm.showSheet = false },
     onPageChanged = { vm.sheetPage = it }
   ) {
@@ -53,7 +54,6 @@ fun LibraryScreen(
         )
         LibraryContent(
           categories = vm.categories,
-          displayMode = vm.displayMode,
           currentPage = vm.selectedCategoryIndex,
           showPageTabs = vm.showCategoryTabs,
           showCountInCategory = vm.showCountInCategory,

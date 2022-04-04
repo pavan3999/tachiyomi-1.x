@@ -24,6 +24,8 @@ expect abstract class BaseViewModel() {
 
   fun <T> Preference<T>.asState(): PreferenceMutableState<T>
 
+  fun <T> Preference<T>.asState(onChange: (T) -> Unit): PreferenceMutableState<T>
+
   fun <T> Flow<T>.asState(initialValue: T): State<T>
 
   fun <T> StateFlow<T>.asState(): State<T>

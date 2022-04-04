@@ -19,7 +19,6 @@ import kotlinx.coroutines.flow.StateFlow
 import kotlinx.coroutines.flow.collect
 import kotlinx.coroutines.launch
 import tachiyomi.domain.library.model.CategoryWithCount
-import tachiyomi.domain.library.model.DisplayMode
 import tachiyomi.domain.library.model.LibraryManga
 import tachiyomi.ui.core.components.rememberPagerState
 
@@ -27,7 +26,6 @@ import tachiyomi.ui.core.components.rememberPagerState
 @Composable
 fun LibraryContent(
   categories: List<CategoryWithCount>,
-  displayMode: DisplayMode,
   currentPage: Int,
   showPageTabs: Boolean,
   showCountInCategory: Boolean,
@@ -60,7 +58,7 @@ fun LibraryContent(
   LibraryPager(
     state = state,
     pageCount = categories.size,
-    displayMode = displayMode,
+    categories = categories,
     selectedManga = selectedManga,
     getColumnsForOrientation = getColumnsForOrientation,
     getLibraryForPage = getLibraryForPage,

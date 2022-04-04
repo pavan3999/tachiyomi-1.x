@@ -14,45 +14,40 @@ kotlin {
   sourceSets {
     named("commonMain") {
       dependencies {
-        api(Deps.kotlin.coroutines.core)
-        api(Deps.kotlin.stdlib)
-        api(Deps.kotlin.datetime)
-        api(Deps.kotlin.serialization.json)
-        api(Deps.ktor.core)
-        api(Deps.ktor.serialization)
-        api(Deps.okio)
-        api(Deps.toothpick.runtime)
+        api(kotlinx.coroutines.core)
+        api(kotlinx.stdlib)
+        api(kotlinx.datetime)
+        api(kotlinx.serialization.json)
+        api(libs.ktor.core)
+        api(libs.ktor.serialization)
+        api(libs.okio)
+        api(libs.toothpick.runtime)
       }
     }
     named("androidMain") {
       kotlin.srcDir("src/jvmMain/kotlin")
       dependencies {
-        implementation(Deps.androidx.core)
-        implementation(Deps.androidx.lifecycle.process)
-        implementation(Deps.androidx.dataStore)
-        implementation(Deps.quickjsAndroid)
+        implementation(androidx.core)
+        implementation(androidx.lifecycle.process)
+        implementation(androidx.dataStore)
+        implementation(libs.quickjs.android)
+        api(libs.ktor.okhttp)
+        implementation(libs.bundles.tinylog)
       }
     }
     named("desktopMain") {
       kotlin.srcDir("src/jvmMain/kotlin")
       dependencies {
-        implementation(Deps.quickjsJvm)
-      }
-    }
-    listOf("androidMain", "desktopMain").forEach { name ->
-      getByName(name) {
-        dependencies {
-          api(Deps.ktor.okhttp)
-          implementation(Deps.tinylog.api)
-          implementation(Deps.tinylog.impl)
-        }
+        implementation(libs.quickjs.jvm)
+        api(libs.ktor.okhttp)
+        implementation(libs.bundles.tinylog)
       }
     }
   }
 }
 
 dependencies {
-  add("kapt", Deps.toothpick.compiler)
+  add("kapt", libs.toothpick.compiler)
 }
 
 afterEvaluate {

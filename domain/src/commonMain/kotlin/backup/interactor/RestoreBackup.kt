@@ -23,6 +23,7 @@ import tachiyomi.domain.backup.model.CategoryProto
 import tachiyomi.domain.backup.model.MangaProto
 import tachiyomi.domain.library.model.MangaCategory
 import tachiyomi.domain.library.service.CategoryRepository
+import tachiyomi.domain.library.service.LibraryPreferences
 import tachiyomi.domain.library.service.MangaCategoryRepository
 import tachiyomi.domain.manga.model.Chapter
 import tachiyomi.domain.manga.model.ChapterUpdate
@@ -40,6 +41,7 @@ class RestoreBackup @Inject internal constructor(
   private val chapterRepository: ChapterRepository,
   private val trackRepository: TrackRepository,
   private val mangaCategoryRepository: MangaCategoryRepository,
+  private val libraryPreferences: LibraryPreferences,
   private val transactions: Transactions
 ) {
 
@@ -166,6 +168,13 @@ class RestoreBackup @Inject internal constructor(
     if (categoriesToAdd.isNotEmpty()) {
       categoryRepository.insert(categoriesToAdd)
     }
+
+    // Turn on per category settings if not all flags match
+    libraryPreferences.perCategorySettings().set(
+      (dbCategories + categoriesToAdd)
+        .distinctBy { it.flags }
+        .size > 1
+    )
   }
 
   internal suspend fun restoreCategoriesOfManga(mangaId: Long, categoryIds: List<Long>) {

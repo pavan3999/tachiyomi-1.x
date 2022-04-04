@@ -14,7 +14,7 @@ kotlin {
       dependencies {
         compileOnly(compose.runtime)
         compileOnly(compose.ui)
-        api(Deps.moko.core)
+        api(libs.moko.core)
       }
     }
     named("androidMain") {

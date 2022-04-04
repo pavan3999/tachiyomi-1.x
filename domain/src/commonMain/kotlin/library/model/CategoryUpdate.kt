@@ -12,5 +12,6 @@ data class CategoryUpdate(
   val id: Long,
   val name: String? = null,
   val order: Int? = null,
-  val updateInterval: Int? = null
+  val updateInterval: Int? = null,
+  val flags: Long? = null
 )

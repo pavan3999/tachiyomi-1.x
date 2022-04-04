@@ -18,28 +18,28 @@ kotlin {
         implementation(project(Module.uiCore))
         implementation(project(Module.sourceApi))
         implementation(project(Module.domain))
-        implementation(Deps.aboutLibraries.compose)
+        implementation(libs.aboutLibraries.compose)
         compileOnly(compose.preview)
       }
     }
     named("androidMain") {
       dependencies {
-        implementation(Deps.androidx.browser)
-        implementation(Deps.androidx.webkit)
-        implementation(Deps.androidx.emoji)
-        implementation(Deps.androidx.compose.navigation)
+        implementation(androidx.browser)
+        implementation(androidx.webkit)
+        implementation(androidx.emoji)
+        implementation(androidx.compose.navigation)
 
-        implementation(Deps.accompanist.pager)
-        implementation(Deps.accompanist.pagerIndicator)
-        implementation(Deps.accompanist.flowlayout)
-        implementation(Deps.accompanist.insets)
-        implementation(Deps.accompanist.systemUiController)
-        implementation(Deps.accompanist.swipeRefresh)
-        implementation(Deps.accompanist.navAnimation)
-        implementation(Deps.accompanist.navMaterial)
+        implementation(accompanist.pager)
+        implementation(accompanist.pagerIndicator)
+        implementation(accompanist.flowlayout)
+        implementation(accompanist.insets)
+        implementation(accompanist.systemUiController)
+        implementation(accompanist.swipeRefresh)
+        implementation(accompanist.navAnimation)
+        implementation(accompanist.navMaterial)
 
-        implementation(Deps.coil.core)
-        implementation(Deps.coil.compose)
+        implementation(libs.coil.core)
+        implementation(libs.coil.compose)
       }
     }
     named("desktopMain") {
@@ -48,7 +48,7 @@ kotlin {
 }
 
 dependencies {
-  add("kapt", Deps.toothpick.compiler)
+  add("kapt", libs.toothpick.compiler)
 }
 
 idea {
