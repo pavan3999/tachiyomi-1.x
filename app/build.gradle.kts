@@ -43,6 +43,7 @@ dependencies {
 }
 
 android {
+  namespace = "tachiyomi.app"
   defaultConfig {
     applicationId = Config.applicationId
   }

@@ -46,6 +46,10 @@ dependencies {
   add("kapt", libs.toothpick.compiler)
 }
 
+android {
+  namespace = "tachiyomi.data"
+}
+
 sqldelight {
   database("Database") {
     packageName = "tachiyomi.data"

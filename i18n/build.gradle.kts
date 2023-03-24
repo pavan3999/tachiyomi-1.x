@@ -25,6 +25,7 @@ kotlin {
 }
 
 android {
+  namespace = "tachiyomi.i18n"
   sourceSets {
     named("main") {
       res.srcDir("src/commonMain/resources")

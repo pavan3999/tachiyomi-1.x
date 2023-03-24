@@ -10,8 +10,8 @@ package tachiyomi.data.catalog
 
 import android.app.Application
 import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsChannel
 import io.ktor.http.HttpHeaders
-import io.ktor.utils.io.ByteReadChannel
 import kotlinx.coroutines.flow.flow
 import tachiyomi.core.http.HttpClients
 import tachiyomi.core.io.saveTo
@@ -49,15 +49,15 @@ internal class AndroidCatalogInstaller @Inject constructor(
     val tmpApkFile = File(context.cacheDir, "${catalog.pkgName}.apk")
     val tmpIconFile = File(context.cacheDir, "${catalog.pkgName}.png")
     try {
-      val apkResponse = client.get<ByteReadChannel>(catalog.pkgUrl) {
+      val apkResponse = client.get(catalog.pkgUrl) {
         headers.append(HttpHeaders.CacheControl, "no-store")
       }
-      apkResponse.saveTo(tmpApkFile)
+      apkResponse.bodyAsChannel().saveTo(tmpApkFile)
 
-      val iconResponse = client.get<ByteReadChannel>(catalog.iconUrl) {
+      val iconResponse = client.get(catalog.iconUrl) {
         headers.append(HttpHeaders.CacheControl, "no-store")
       }
-      iconResponse.saveTo(tmpIconFile)
+      iconResponse.bodyAsChannel().saveTo(tmpIconFile)
 
       emit(Installing)
 

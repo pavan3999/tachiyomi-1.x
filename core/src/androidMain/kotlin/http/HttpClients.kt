@@ -11,8 +11,8 @@ package tachiyomi.core.http
 import android.app.Application
 import io.ktor.client.HttpClient
 import io.ktor.client.engine.okhttp.OkHttp
-import io.ktor.client.features.json.JsonFeature
-import io.ktor.client.features.json.serializer.KotlinxSerializer
+import io.ktor.client.plugins.contentnegotiation.ContentNegotiation
+import io.ktor.serialization.kotlinx.json.json
 import okhttp3.Cache
 import okhttp3.OkHttpClient
 import java.io.File
@@ -39,8 +39,8 @@ actual class HttpClients @Inject internal constructor(context: Application) {
     engine {
       preconfigured = okhttpClient
     }
-    install(JsonFeature) {
-      serializer = KotlinxSerializer()
+    install(ContentNegotiation) {
+      json()
     }
   }
 

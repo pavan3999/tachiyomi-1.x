@@ -9,7 +9,7 @@
 package tachiyomi.domain.download.service
 
 import io.ktor.client.request.request
-import io.ktor.utils.io.ByteReadChannel
+import io.ktor.client.statement.bodyAsChannel
 import kotlinx.coroutines.CoroutineScope
 import kotlinx.coroutines.channels.ReceiveChannel
 import kotlinx.coroutines.channels.SendChannel
@@ -149,7 +149,8 @@ internal open class Downloader @Inject constructor(
               when (cpage) {
                 is ImageUrl -> {
                   val (client, request) = source.getImageRequest(cpage)
-                  val body = client.request<ByteReadChannel>(request)
+                  val response = client.request(request)
+                  val body = response.bodyAsChannel()
                   val head = body.peek(32)
 
                   val finalFile = getImageFile(tmpFile, head)

@@ -51,6 +51,10 @@ dependencies {
   add("kapt", libs.toothpick.compiler)
 }
 
+android {
+  namespace = "tachiyomi.ui"
+}
+
 idea {
   module {
     (this as ExtensionAware).configure<org.jetbrains.gradle.ext.ModuleSettings> {

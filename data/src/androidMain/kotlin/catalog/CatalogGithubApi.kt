@@ -9,6 +9,7 @@
 package tachiyomi.data.catalog
 
 import io.ktor.client.request.get
+import io.ktor.client.statement.bodyAsText
 import kotlinx.serialization.Serializable
 import kotlinx.serialization.decodeFromString
 import kotlinx.serialization.json.Json
@@ -25,8 +26,9 @@ internal class CatalogGithubApi @Inject constructor(
     "https://raw.githubusercontent.com/tachiyomiorg/tachiyomi-extensions-1.x/repo"
 
   override suspend fun fetchCatalogs(): List<CatalogRemote> {
-    val response = httpClients.default.get<String>("$repoUrl/index.min.json")
-    val catalogs = Json.Default.decodeFromString<List<CatalogRemoteApiModel>>(response)
+    val response = httpClients.default.get("$repoUrl/index.min.json")
+    val body = response.bodyAsText()
+    val catalogs = Json.Default.decodeFromString<List<CatalogRemoteApiModel>>(body)
     return catalogs.map { catalog ->
       CatalogRemote(
         name = catalog.name,

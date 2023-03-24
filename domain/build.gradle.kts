@@ -41,6 +41,10 @@ dependencies {
   add("kapt", libs.toothpick.compiler)
 }
 
+android {
+  namespace = "tachiyomi.domain"
+}
+
 val jacocoTestReport by tasks.creating(JacocoReport::class.java) {
   dependsOn("jvmTest")
 
